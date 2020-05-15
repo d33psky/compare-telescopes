@@ -27,14 +27,28 @@ Telescope 2 f/6.95  f= 709mm D=102mm O= 0% res=1.11"/p FOV=86'x65'=17.55x eoi= 2
 Now the LX200 has an unrealistic high resolution of 0.26"/pixel, and the refractor gets 3.28x more signal at the sensor.
 
 Note that the second camera arguments were not given in which case those of the first camera are copied internally.
+
+Of the f-ratio, aperture diameter and focal length only 2 can be specified at the same time, the program then calculates the third.
+
+Many other parameters are optional.
+A quick-and-dirty minimum set to compare 2 telescopes could be :
+
+`compare-telescopes.py --d1 100 --f1 6 --d2 80 --f2 7`
+
+```
+Telescope 1 f/6.00  f= 600mm D=100mm O= 0% res=1.38"/p FOV=23'x23'= 0.87x eoi= 1.36x poi= 2.13x etendue= 1.36x signal= 1.36x
+Telescope 2 f/7.00  f= 560mm D= 80mm O= 0% res=1.47"/p FOV=25'x25'= 1.15x eoi= 0.73x poi= 0.47x etendue= 0.73x signal= 0.73x
+```
+
 If no camera is specified at all one is made up for the comparison with 1000x1000 pixels, 4μm pixel size, 100% QE.
+
 
 ## Detailed output mode
 
 1. 14" Celestron, f/10.8, central obstruction 32%, KAF-16803 camera 4096x4096, 9μm pixels, QE 65%
 2. 11" Celestron, f/10, central obstruction 31%, ASI1600MM camera 4656x3520, 3.8µm pixels, QE 75%
 
-`compare-telescopes.py --di1 14 --f1 10.8 --o1 0.32 --c1h 4096 --c1v 4096 --c1p 9 --c1q 0.65 --di2 11 --f2 10 --o2 0.31 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 0.75`
+`compare-telescopes.py --di1 14 --f1 10.8 --o1 0.32 --c1h 4096 --c1v 4096 --c1p 9 --c1q 0.65 --di2 11 --f2 10 --o2 0.31 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 0.75 --detail`
 
 ```
 OTA 1 resolving power 0.354 [arcsec], plate scale 53.708 [arcsec/mm] = 18.6 [μm/arcsec]
@@ -66,7 +80,7 @@ The 11" focal ratio may be faster but the 14" gets 4.14x more signal at a sensor
 
 `compare-telescopes.py --help`
 ``` 
-usage: compare-telescopes.py [-h] [--brief] [--legend]
+usage: compare-telescopes.py [-h] [--brief] [--detail] [--legend]
                              [--d1 D1] [--di1 DI1] [--o1 O1] [--l1 L1]
                              [--f1 F1] [--r1 R1] [--c1h C1H] [--c1v C1V]
                              [--c1p C1P] [--c1q C1Q] [--d2 D2] [--di2 DI2]
@@ -76,6 +90,7 @@ usage: compare-telescopes.py [-h] [--brief] [--legend]
 optional arguments:
   -h, --help      show this help message and exit
   --brief         Brief output
+  --detail        Detail output
   --legend        Legend
   --d1 D1         Telescope 1 aperture Diameter [mm]
   --di1 DI1       Telescope 1 aperture Diameter [inch]
