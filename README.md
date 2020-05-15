@@ -53,14 +53,14 @@ Many other parameters are optional.
 1. 14" Celestron, f/10.8, central obstruction 32%, KAF-16803 camera 4096x4096, 9μm pixels, QE 65%
 2. 11" Celestron, f/10, central obstruction 31%, ASI1600MM camera 4656x3520, 3.8µm pixels, QE 75%
 
-`compare-telescopes.py --di1 14 --f1 10.8 --o1 0.32 --c1h 4096 --c1v 4096 --c1p 9 --c1q 0.65 --di2 11 --f2 10 --o2 0.31 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 0.75 --detail`
+`compare-telescopes.py --di1 14 --f1 10.8 --o1 0.32 --c1h 4096 --c1v 4096 --c1p 9 --c1q 65 --di2 11 --f2 10 --o2 0.31 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 75 --detail`
 
 ```
 OTA 1 resolving power 0.354 [arcsec], plate scale 53.708 [arcsec/mm] = 18.6 [μm/arcsec]
 OTA 1 focal ratio f/10.8, focal length 3840 [mm], aperture diameter 356 [mm], central obstruction ratio 0.32, diameter 114 [mm]
 OTA 1 aperture area 89144.84 [mm^2], collects 1.61x more photons
 Camera 1 pixel size 9.00 [μm], sensor size 4096x4096 [pixels*pixels], 36.9x36.9 [mm*mm], sensor area 1358.95 [mm^2], 5.74x larger
-Camera 1 quantum efficiency  1 [%]
+Camera 1 quantum efficiency 65 [%]
 Telescope 1 resolution 0.48 [arcsec/pixel], FOV 33x33 [arcmin*arcmin], 3.04x larger
 Telescope 1 extended object irradiance is 0.86x more
 Telescope 1    point object irradiance is 1.38x more
@@ -71,7 +71,7 @@ OTA 2 resolving power 0.450 [arcsec], plate scale 73.824 [arcsec/mm] = 13.5 [μm
 OTA 2 focal ratio f/10.0, focal length 2794 [mm], aperture diameter 279 [mm], central obstruction ratio 0.31, diameter 87 [mm]
 OTA 2 aperture area 55419.56 [mm^2], collects 0.62x more photons
 Camera 2 pixel size 3.80 [μm], sensor size 4656x3520 [pixels*pixels], 17.7x13.4 [mm*mm], sensor area 236.66 [mm^2], 0.17x larger
-Camera 2 quantum efficiency  1 [%]
+Camera 2 quantum efficiency 75 [%]
 Telescope 2 resolution 0.28 [arcsec/pixel], FOV 22x16 [arcmin*arcmin], 0.33x larger
 Telescope 2 extended object irradiance is 1.17x more
 Telescope 2    point object irradiance is 0.73x more
