@@ -8,6 +8,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--just_numbers", action="store_true", help="Output just the numbers")
     parser.add_argument("--brief", action="store_true", help="Brief output")
+    parser.add_argument("--detail", action="store_true", help="Detail output")
     parser.add_argument("--legend", action="store_true", help="Legend")
 
     parser.add_argument("--d1", required=False, type=float, help="Telescope 1 aperture Diameter [mm]")
@@ -148,7 +149,7 @@ def main():
     t1_t2_pixel_signal = t1_pixel_signal / t2_pixel_signal
     t2_t1_pixel_signal = t2_pixel_signal / t1_pixel_signal
 
-    if args.brief:
+    if args.brief or not args.detail:
         print('Telescope 1 f/{:<5.2f} f={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x etendue={:5.2f}x signal={:5.2f}x'.format(
             t1_focal_ratio, t1_focal_length, t1_aperture_diameter, 100*t1_obstruction_ratio, t1_arcsec_p, t1_view_h/60, t1_view_v/60, t1_t2_view_factor, t1_t2_extended_object_irradiance_factor, t1_t2_point_object_irradiance_factor, t1_t2_pixel_etendue, t1_t2_pixel_signal))
         print('Telescope 2 f/{:<5.2f} f={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x etendue={:5.2f}x signal={:5.2f}x'.format(
