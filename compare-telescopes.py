@@ -149,9 +149,9 @@ def main():
     t2_t1_pixel_signal = t2_pixel_signal / t1_pixel_signal
 
     if args.brief:
-        print('Telescope 1 f/{:<4.1f} f={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x etendue={:5.2f}x signal={:5.2f}x'.format(
+        print('Telescope 1 f/{:<5.2f} f={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x etendue={:5.2f}x signal={:5.2f}x'.format(
             t1_focal_ratio, t1_focal_length, t1_aperture_diameter, 100*t1_obstruction_ratio, t1_arcsec_p, t1_view_h/60, t1_view_v/60, t1_t2_view_factor, t1_t2_extended_object_irradiance_factor, t1_t2_point_object_irradiance_factor, t1_t2_pixel_etendue, t1_t2_pixel_signal))
-        print('Telescope 2 f/{:<4.1f} f={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x etendue={:5.2f}x signal={:5.2f}x'.format(
+        print('Telescope 2 f/{:<5.2f} f={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x etendue={:5.2f}x signal={:5.2f}x'.format(
             t2_focal_ratio, t2_focal_length, t2_aperture_diameter, 100*t2_obstruction_ratio, t2_arcsec_p, t2_view_h/60, t2_view_v/60, t2_t1_view_factor, t2_t1_extended_object_irradiance_factor, t2_t1_point_object_irradiance_factor, t2_t1_pixel_etendue, t2_t1_pixel_signal))
         if args.legend:
             print('# f-number Focallength apertureDiameter Obstruction resolution FieldOfView ExtendedObjectIrradiance PixelOI pixelEtendue pixelSignal')
