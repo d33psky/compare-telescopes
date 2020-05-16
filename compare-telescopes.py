@@ -47,8 +47,8 @@ def main():
             t1_focal_ratio = t1_focal_length / t1_aperture_diameter
         else:
             if args.f1:
-                t1_focal_ratio = args.f1
-                t1_focal_length = t1_aperture_diameter * t1_focal_ratio * t1_focal_reducer
+                t1_focal_ratio = args.f1 * t1_focal_reducer
+                t1_focal_length = t1_aperture_diameter * t1_focal_ratio
             else:
                 print('Need 2 out of 3 of Telescope 1 aperture Diameter, Focal length, Focal ratio')
                 quit(1)
@@ -56,7 +56,7 @@ def main():
         if args.l1:
             t1_focal_length = args.l1 * t1_focal_reducer
             if args.f1:
-                t1_focal_ratio = args.f1
+                t1_focal_ratio = args.f1 * t1_focal_reducer
                 t1_aperture_diameter = t1_focal_length / t1_focal_ratio
             else:
                 print('Need 2 out of 3 of Telescope 1 aperture Diameter, Focal length, Focal ratio')
@@ -78,8 +78,8 @@ def main():
             t2_focal_ratio = t2_focal_length / t2_aperture_diameter
         else:
             if args.f2:
-                t2_focal_ratio = args.f2
-                t2_focal_length = t2_aperture_diameter * t2_focal_ratio * t2_focal_reducer
+                t2_focal_ratio = args.f2 * t2_focal_reducer
+                t2_focal_length = t2_aperture_diameter * t2_focal_ratio
             else:
                 print('Need 2 out of 3 of Telescope 2 aperture Diameter, Focal length, Focal ratio')
                 quit(1)
@@ -87,7 +87,7 @@ def main():
         if args.l2:
             t2_focal_length = args.l2 * t2_focal_reducer
             if args.f2:
-                t2_focal_ratio = args.f2
+                t2_focal_ratio = args.f2 * t2_focal_reducer
                 t2_aperture_diameter = t2_focal_length / t2_focal_ratio
             else:
                 print('Need 2 out of 3 of Telescope 2 aperture Diameter, Focal length, Focal ratio')
