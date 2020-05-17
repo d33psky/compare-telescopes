@@ -1,15 +1,25 @@
 #!/usr/bin/env python3
-# 1589625264
+"""
+Compare the imaging performance of 2 telescopes for astrophotography.
+Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue and signal.
 
+Version 1.0
+Source code at https://github.com/d33psky/compare-telescopes/
+"""
 import argparse
 import math
+import textwrap
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=__doc__,
+        epilog='Use --formulas to read about the math behind the performance indicators.')
     parser.add_argument("--just_numbers", action="store_true", help="Output just the numbers")
     parser.add_argument("--brief", action="store_true", help="Brief output")
     parser.add_argument("--detail", action="store_true", help="Detail output")
     parser.add_argument("--legend", action="store_true", help="Legend")
+    parser.add_argument("--formulas", action="store_true", help="Show the used formulas")
 
     parser.add_argument("--d1", required=False, type=float, help="Telescope 1 aperture Diameter [mm]")
     parser.add_argument("--di1", required=False, type=float, help="Telescope 1 aperture Diameter [inch]")
@@ -34,7 +44,9 @@ def main():
     parser.add_argument("--c2q", required=False, type=float, help="Camera 2 QE [percent]")
 
     args = parser.parse_args()
-#    print('https://github.com/d33psky/compare-telescopes/')
+    if args.formulas:
+        print_formulas()
+        quit(0)
 
     t1_aperture_diameter = args.d1 if args.d1 else args.di1*25.4 if args.di1 else None
     t1_focal_reducer = args.r1 if args.r1 else 1
@@ -124,6 +136,7 @@ def main():
     t1_view_h = c1_h * arcsec_per_radian/t1_focal_length * c1_p / 1000
     t1_view_v = c1_v * arcsec_per_radian/t1_focal_length * c1_p / 1000
     t1_view_a = t1_view_h * t1_view_v
+    t1_sensor_etendue = t1_aperture_area * t1_view_a
     t1_pixel_etendue = t1_aperture_area * t1_arcsec_p**2
     t1_pixel_signal = t1_pixel_etendue * (c1_q/100) # TODO add total system transmission
 
@@ -131,6 +144,7 @@ def main():
     t2_view_h = c2_h * arcsec_per_radian/t2_focal_length * c2_p / 1000
     t2_view_v = c2_v * arcsec_per_radian/t2_focal_length * c2_p / 1000
     t2_view_a = t2_view_h * t2_view_v
+    t2_sensor_etendue = t2_aperture_area * t2_view_a
     t2_pixel_etendue = t2_aperture_area * t2_arcsec_p**2
     t2_pixel_signal = t2_pixel_etendue * (c2_q/100) # TODO add total system transmission
 
@@ -190,6 +204,39 @@ def main():
         print('Telescope 2 pixel etendue {:.2f} [mm^2arcsec^2], {:.2f}x more'.format(t2_pixel_etendue, t2_t1_pixel_etendue))
         print('Telescope 2 pixel signal is {:.2f}x more'.format(t2_t1_pixel_signal))
         print('---')
+
+
+def print_formulas():
+    formulas = textwrap.dedent("""\
+    - Pixel Scale, or pixel resolution, is the solid angle that is projected on a single pixel.
+      It is measured in arcseconds per pixel, ["/pixel].
+      Formula: pixel scale ["/pixel] = 206.265 [k"] * pixel size [μm/pixel] / focal length [mm]
+      With 206.265 the amount of arcseconds per radian / 1000
+      And arcseconds per radian = (360 / (2 * pi)) * 60 * 60 = 206.26480624709635515795...
+    - FOV, Field Of View, is the solid angle that is projected on the camera sensor.
+      angle_x ["] = camera_pixels_x [pixels] * pixel scale ["/pixel]
+      angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
+      FOV is displayed in arcminutes ["/60]
+    - Extended Object Irradiance is the radiant flux (power) received by the sensor per unit area of an extended object.
+      Extended Object Irradiance is measured in Watt/m^2.
+      We do not compute the irradiance itself because the ratio suffices and that varies as the inverse square of the focal ratio.
+      Aperture size does not matter for Extended Object Irradiance. (It does for Point Object Irradiance).
+      An extended object is anything that is not a point source, where a point source can be a star or anything else close to the size of the angular PSF projected onto the sky.
+      Formula: Extended_Object_Irradiance_ratio = 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
+      The Extended Object Irradiance is also known as the Speed of a film camera where an f/4 is twice as fast as an f/5.6, meaning you need only half the time.
+    - Point Object Irradiance is the radiant flux (power) received by the sensor per unit area of a point object.
+      For point objects such as stars the image irradiance varies as the aperture area ratio and the inverse square of the focal ratio.
+      Aperture size matters for Point Object Irradiance. (It does not for Extended Object Irradiance).
+      Formula: Point_Object_Irradiance_ratio = (ota 1 aperture area/ota 2 aperture area) * 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
+    - Pixel Etendue represents a measure of the size and angular spread of a beam of light onto a pixel.
+      Etendue is a system property of the OTA, G = aperture_area * pi * NA^2. It is translated to a single pixel here.
+      Etendue is also known as light-gathering or light-collecting power.
+      Formula: pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2/pixel]
+      Classically we should use aperture_area * pi * (pixel_scale/2)^2 instead.
+    - Pixel Signal is the Pixel Etendue corrected for the sensor QE and optical system transmission losses
+      Forumula: pixel_signal = pixel_etendue * (QE [%]/100) # TODO add total system transmission
+    """)
+    print(formulas)
 
 if __name__ == '__main__':
     main()
