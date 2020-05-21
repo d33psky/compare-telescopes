@@ -28,14 +28,14 @@ Version 1.0
 <br/>
 Source code at <a href="https://github.com/d33psky/compare-telescopes/">https://github.com/d33psky/compare-telescopes/</a>
 <br>
-This is the web version of the brief output mode of the Python CLI program.
+This is the <a href="https://lambermont.dyndns.org/astro/code/compare-telescopes.html">web version</a> of the Python CLI program.
 <br>
 <br>
 <br>
 
 <div>
     <form name="CT1" action="compare-telescopes.html">
-        <input type="button" value="Use sets of example values" name="B3" onclick="CT1_Example();">
+        <input type="button" value="Examples" name="B3" onclick="CT1_Example();">
         <table border="0" style="border-collapse: collapse" cellpadding="3">
             <thead>
             <tr>
@@ -110,7 +110,7 @@ This is the web version of the brief output mode of the Python CLI program.
                 <td>
                     <input type="text" name="o2" size="13" tabindex="1">
                 </td>
-                <td align="left">[0-1], default 0</td>
+                <td align="left">[0-1>, default 0</td>
             </tr>
 
             <tr>
@@ -121,7 +121,7 @@ This is the web version of the brief output mode of the Python CLI program.
                 <td>
                     <input type="text" name="t2" size="13" tabindex="1">
                 </td>
-                <td align="left">[0-1], default 1</td>
+                <td align="left"><0-1], default 1</td>
             </tr>
 
             </tbody>
@@ -286,7 +286,7 @@ function CT1_Example() {
         ct1.l1.value = "2970";
         ct1.l2.value = "710";
         break;
-    case 1:
+    case 1: // --di1 10 --l1 2970 --d2 100 --l2 710
         ct1.di1.value = "10";
         ct1.d2.value = "100";
         ct1.l1.value = "2970";
@@ -309,6 +309,13 @@ function CT1_Example() {
         ct1.c2v.value = "3520";
         ct1.c2p.value = "3.8";
         ct1.c2q.value = "0.75";
+        break;
+    case 3: // --d1 80 --f1 7 --d2 80 --f2 7 --r2 0.75
+        ct1.d1.value = "80";
+        ct1.f1.value = "7";
+        ct1.d2.value = "80";
+        ct1.f2.value = "7";
+        ct1.r2.value = "0.75";
         break;
     }
     CT1_OnClick();
@@ -476,7 +483,31 @@ function CT1_OnClick() {
     tel2 += " etendue=" + t2_t1_pixel_etendue.toFixed(2).padStart(5) + 'x';
     tel2 += " signal=" + t2_t1_pixel_signal.toFixed(2).padStart(5) + 'x';
 
-    var comparison = '# compare-telescopes.py' + '\n\n';
+    var python_args = "";
+    python_args += (ct1.d1.value>0) ? " --d1 " +ct1.d1.value : '';
+    python_args += (ct1.di1.value>0) ? " --di1 " +ct1.di1.value : '';
+    python_args += (ct1.o1.value>0) ? " --o1 " +ct1.o1.value : '';
+    python_args += (ct1.l1.value>0) ? " --l1 " +ct1.l1.value : '';
+    python_args += (ct1.f1.value>0) ? " --f1 " +ct1.f1.value : '';
+    python_args += (ct1.r1.value>0) ? " --r1 " +ct1.r1.value : '';
+    python_args += (ct1.t1.value>0) ? " --t1 " +ct1.t1.value : '';
+    python_args += (ct1.c1h.value>0) ? " --c1h " +ct1.c1h.value : '';
+    python_args += (ct1.c1v.value>0) ? " --c1v " +ct1.c1v.value : '';
+    python_args += (ct1.c1p.value>0) ? " --c1p " +ct1.c1p.value : '';
+    python_args += (ct1.c1q.value>0) ? " --c1q " +ct1.c1q.value : '';
+    python_args += (ct1.d2.value>0) ? " --d2 " +ct1.d2.value : '';
+    python_args += (ct1.di2.value>0) ? " --di2 " +ct1.di2.value : '';
+    python_args += (ct1.o2.value>0) ? " --o2 " +ct1.o2.value : '';
+    python_args += (ct1.l2.value>0) ? " --l2 " +ct1.l2.value : '';
+    python_args += (ct1.f2.value>0) ? " --f2 " +ct1.f2.value : '';
+    python_args += (ct1.r2.value>0) ? " --r2 " +ct1.r2.value : '';
+    python_args += (ct1.t2.value>0) ? " --t2 " +ct1.t2.value : '';
+    python_args += (ct1.c2h.value>0) ? " --c2h " +ct1.c2h.value : '';
+    python_args += (ct1.c2v.value>0) ? " --c2v " +ct1.c2v.value : '';
+    python_args += (ct1.c2p.value>0) ? " --c2p " +ct1.c2p.value : '';
+    python_args += (ct1.c2q.value>0) ? " --c2q " +ct1.c2q.value : '';
+
+    var comparison = '# compare-telescopes.py' + python_args + '\n\n';
     comparison += "Telescope 1" + tel1 + '\n';
     comparison += "Telescope 2" + tel2;
     document.getElementById("comparison").innerHTML = comparison;
