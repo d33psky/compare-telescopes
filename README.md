@@ -85,39 +85,54 @@ The 11" focal ratio may be faster but the 14" gets 4.14x more signal at a sensor
 ## Usage
 
 `compare-telescopes.py --help`
-``` 
-usage: compare-telescopes.py [-h] [--brief] [--detail] [--legend]
-                             [--d1 D1] [--di1 DI1] [--o1 O1] [--l1 L1]
-                             [--f1 F1] [--r1 R1] [--c1h C1H] [--c1v C1V]
-                             [--c1p C1P] [--c1q C1Q] [--d2 D2] [--di2 DI2]
-                             [--o2 O2] [--l2 L2] [--f2 F2] [--r2 R2]
-                             [--c2h C2H] [--c2v C2V] [--c2p C2P] [--c2q C2Q]
+```
+usage: compare-telescopes.py [-h] [--just_numbers] [--brief] [--detail]
+                             [--legend] [--formulas] [--d1 D1] [--di1 DI1]
+                             [--o1 O1] [--l1 L1] [--f1 F1] [--r1 R1] [--t1 T1]
+                             [--c1h C1H] [--c1v C1V] [--c1p C1P] [--c1q C1Q]
+                             [--d2 D2] [--di2 DI2] [--o2 O2] [--l2 L2]
+                             [--f2 F2] [--r2 R2] [--t2 T2] [--c2h C2H]
+                             [--c2v C2V] [--c2p C2P] [--c2q C2Q]
+
+Compare the imaging performance of 2 telescopes for astrophotography.
+Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue and signal.
+
+Version 1.0
+Source code at https://github.com/d33psky/compare-telescopes/
 
 optional arguments:
   -h, --help      show this help message and exit
+  --just_numbers  Output just the numbers
   --brief         Brief output
   --detail        Detail output
   --legend        Legend
+  --formulas      Show the used formulas
   --d1 D1         Telescope 1 aperture Diameter [mm]
   --di1 DI1       Telescope 1 aperture Diameter [inch]
-  --o1 O1         Telescope 1 central Obstruction ratio [float]
+  --o1 O1         Telescope 1 central Obstruction ratio [float, 0-1]
   --l1 L1         Telescope 1 focal Length [mm]
-  --f1 F1         Telescope 1 Focal ratio, defined as focal Length / aperture Diameter [dimensionless]
-  --r1 R1         Telescope 1 focal Reducer [float]
+  --f1 F1         Telescope 1 Focal ratio, defined as focal Length / aperture
+                  Diameter [dimensionless]
+  --r1 R1         Telescope 1 focal Reducer factor [float]
+  --t1 T1         Telescope 1 total Transmission factor [float, 0-1]
   --c1h C1H       Camera 1 Horizontal pixels [count]
   --c1v C1V       Camera 1 Vertical pixels [count]
   --c1p C1P       Camera 1 Pixel size [μm]
-  --c1q C1Q       Camera 1 QE [percent]
+  --c1q C1Q       Camera 1 QE ratio [float, 0-1]
   --d2 D2         Telescope 2 aperture Diameter [mm]
   --di2 DI2       Telescope 2 aperture Diameter [inch]
-  --o2 O2         Telescope 2 central obstruction ratio [float]
+  --o2 O2         Telescope 2 central obstruction ratio [float, 0-1]
   --l2 L2         Telescope 2 focal Length [mm]
-  --f2 F2         Telescope 2 Focal ratio, defined as focal Length / aperture Diameter [dimensionless]
-  --r2 R2         Telescope 2 focal Reducer [float]
+  --f2 F2         Telescope 2 Focal ratio, defined as focal Length / aperture
+                  Diameter [dimensionless]
+  --r2 R2         Telescope 2 focal Reducer factor [float]
+  --t2 T2         Telescope 2 total Transmission factor [float, 0-1]
   --c2h C2H       Camera 2 Horizontal pixels [count]
   --c2v C2V       Camera 2 Vertical pixels [count]
   --c2p C2P       Camera 2 Pixel size [μm]
-  --c2q C2Q       Camera 2 QE [percent]
+  --c2q C2Q       Camera 2 QE ratio [float, 0-1]
+
+Use --formulas to read about the math behind the performance indicators.
 ```
 
 ## Performance indicators
@@ -186,6 +201,6 @@ Pixel Signal is the Pixel Etendue corrected for the sensor QE and optical system
 
 Formula:
 ```
-pixel_signal = pixel_etendue * (QE [%]/100) # TODO add total system transmission
+pixel_signal = pixel_etendue * QE-factor * Transmission-factor
 ```
 

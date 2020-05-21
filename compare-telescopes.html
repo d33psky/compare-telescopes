@@ -70,7 +70,7 @@ This is the web version of the brief output mode of the Python CLI program.
             </tr>
 
             <tr>
-                <td align="right">focal Length in mm</td>
+                <td align="right">focal Length</td>
                 <td>
                     <input type="text" name="l1" size="13" tabindex="1">
                 </td>
@@ -81,18 +81,7 @@ This is the web version of the brief output mode of the Python CLI program.
             </tr>
 
             <tr>
-                <td align="right">focal Length in inches</td>
-                <td>
-                    <input type="text" name="li1" size="13" tabindex="1">
-                </td>
-                <td>
-                    <input type="text" name="li2" size="13" tabindex="1">
-                </td>
-                <td align="left">[inch]</td>
-            </tr>
-
-            <tr>
-                <td align="right">f/ratio</td>
+                <td align="right">F/ratio</td>
                 <td>
                     <input type="text" name="f1" size="13" tabindex="1">
                 </td>
@@ -103,25 +92,36 @@ This is the web version of the brief output mode of the Python CLI program.
             </tr>
 
             <tr>
-                <td align="right">focal reduction factor</td>
+                <td align="right">focal Reducer factor</td>
                 <td>
                     <input type="text" name="r1" size="13" tabindex="1">
                 </td>
                 <td>
                     <input type="text" name="r2" size="13" tabindex="1">
                 </td>
-                <td align="left">[0-1], default 1</td>
+                <td align="left">[float], default 1</td>
             </tr>
 
             <tr>
-                <td align="right">central Obstruction percentage</td>
+                <td align="right">central Obstruction ratio</td>
                 <td>
                     <input type="text" name="o1" size="13" tabindex="1">
                 </td>
                 <td>
                     <input type="text" name="o2" size="13" tabindex="1">
                 </td>
-                <td align="left">[0-100], default 0</td>
+                <td align="left">[0-1], default 0</td>
+            </tr>
+
+            <tr>
+                <td align="right">optical Transmission factor</td>
+                <td>
+                    <input type="text" name="t1" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="t2" size="13" tabindex="1">
+                </td>
+                <td align="left">[0-1], default 1</td>
             </tr>
 
             </tbody>
@@ -136,7 +136,7 @@ This is the web version of the brief output mode of the Python CLI program.
             <tbody>
 
             <tr>
-                <td align="right">horizontal pixels</td>
+                <td align="right">Horizontal pixels</td>
                 <td>
                     <input type="text" name="c1h" size="13" tabindex="1">
                 </td>
@@ -147,7 +147,7 @@ This is the web version of the brief output mode of the Python CLI program.
             </tr>
 
             <tr>
-                <td align="right">vertical pixels</td>
+                <td align="right">Vertical pixels</td>
                 <td>
                     <input type="text" name="c1v" size="13" tabindex="1">
                 </td>
@@ -158,7 +158,7 @@ This is the web version of the brief output mode of the Python CLI program.
             </tr>
 
             <tr>
-                <td align="right">pixel size</td>
+                <td align="right">Pixel size</td>
                 <td>
                     <input type="text" name="c1p" size="13" tabindex="1">
                 </td>
@@ -169,14 +169,14 @@ This is the web version of the brief output mode of the Python CLI program.
             </tr>
 
             <tr>
-                <td align="right">quantum efficiency</td>
+                <td align="right">Quantum efficiency factor</td>
                 <td>
                     <input type="text" name="c1q" size="13" tabindex="1">
                 </td>
                 <td>
                     <input type="text" name="c2q" size="13" tabindex="1">
                 </td>
-                <td align="left">[percent], default 100</td>
+                <td align="left">[0-1], default 1</td>
             </tr>
 
             </tbody>
@@ -240,7 +240,7 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
     <h3>Pixel Signal</h3>
     <p>Pixel Signal is the Pixel Etendue corrected for the sensor QE and optical system transmission losses.</p>
     <p>Formula:</p>
-    <pre><code>pixel_signal = pixel_etendue * (QE [%]/100) # TODO add total system transmission
+    <pre><code>pixel_signal = pixel_etendue * QE-factor * Transmission-factor
     </code></pre>
 </div>
 
@@ -255,15 +255,15 @@ function CT1_Reset() {
     ct1.d2.value = "";
     ct1.di2.value = "";
     ct1.l1.value = "";
-    ct1.li1.value = "";
     ct1.l2.value = "";
-    ct1.li2.value = "";
     ct1.f1.value = "";
     ct1.f2.value = "";
     ct1.r1.value = "";
     ct1.r2.value = "";
     ct1.o1.value = "";
     ct1.o2.value = "";
+    ct1.t1.value = "";
+    ct1.t2.value = "";
     // camera
     ct1.c1h.value = "";
     ct1.c2h.value = "";
@@ -292,21 +292,23 @@ function CT1_Example() {
         ct1.l1.value = "2970";
         ct1.l2.value = "710";
         break;
-    case 2: // --di1 14 --f1 10.8 --o1 0.32 --c1h 4096 --c1v 4096 --c1p 9 --c1q 65 --di2 11 --f2 10 --o2 0.31 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 75
+    case 2: // --di1 14 --f1 10.8 --o1 0.32 --t1 0.89 --c1h 4096 --c1v 4096 --c1p 9 --c1q 0.65 --di2 11 --f2 10 --o2 0.31 --t2 0.89 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 0.75
         ct1.di1.value = "14";
         ct1.f1.value = "10.8";
         ct1.o1.value = "0.32";
+        ct1.t1.value = "0.89";
         ct1.c1h.value = "4096";
         ct1.c1v.value = "4096";
         ct1.c1p.value = "9";
-        ct1.c1q.value = "65";
+        ct1.c1q.value = "0.65";
         ct1.di2.value = "11";
         ct1.f2.value = "10";
         ct1.o2.value = "0.31";
+        ct1.t2.value = "0.89";
         ct1.c2h.value = "4656";
         ct1.c2v.value = "3520";
         ct1.c2p.value = "3.8";
-        ct1.c2q.value = "75";
+        ct1.c2q.value = "0.75";
         break;
     }
     CT1_OnClick();
@@ -355,6 +357,7 @@ function CT1_OnClick() {
     }
     var t1_obstruction_ratio = (ct1.o1.value>0) ? parseFloat(ct1.o1.value) : 0;
     var t1_obstruction_diameter = t1_obstruction_ratio * t1_aperture_diameter;
+    var t1_transmission_factor = (ct1.t1.value>0) ? parseFloat(ct1.t1.value) : 1;
 
     var t2_aperture_diameter = NaN;
     var t2_focal_length = NaN;
@@ -396,6 +399,7 @@ function CT1_OnClick() {
     }
     var t2_obstruction_ratio = (ct1.o2.value>0) ? parseFloat(ct1.o2.value) : 0;
     var t2_obstruction_diameter = t2_obstruction_ratio * t2_aperture_diameter;
+    var t2_transmission_factor = (ct1.t2.value>0) ? parseFloat(ct1.t2.value) : 1;
 
     const arcsec_per_radian = (360 / (2 * Math.PI)) * 60 * 60; // 206265.something
 
@@ -407,7 +411,7 @@ function CT1_OnClick() {
     var c1_v = (ct1.c1v.value>0) ? ct1.c1v.value : 1000;
     var c1_p = (ct1.c1p.value>0) ? ct1.c1p.value : 3.8;
     var c1_a = c1_h * c1_p * c1_v * c1_p;
-    var c1_q = (ct1.c1q.value>0) ? ct1.c1q.value : 100;
+    var c1_q = (ct1.c1q.value>0) ? ct1.c1q.value : 1;
 
     var t2_obstruction_area = Math.PI * (t2_obstruction_diameter/2)**2;
     var t2_aperture_area = Math.PI * (t2_aperture_diameter/2)**2 - t2_obstruction_area;
@@ -425,7 +429,7 @@ function CT1_OnClick() {
     var t1_view_a = t1_view_h * t1_view_v;
     var t1_sensor_etendue = t1_aperture_area * t1_view_a;
     var t1_pixel_etendue = t1_aperture_area * t1_arcsec_p**2;
-    var t1_pixel_signal = t1_pixel_etendue * (c1_q/100); // TODO add total system transmission
+    var t1_pixel_signal = t1_pixel_etendue * c1_q * t1_transmission_factor;
 
     var t2_arcsec_p = arcsec_per_radian/t2_focal_length * c2_p / 1000;
     var t2_view_h = c2_h * arcsec_per_radian/t2_focal_length * c2_p / 1000;
@@ -433,7 +437,7 @@ function CT1_OnClick() {
     var t2_view_a = t2_view_h * t2_view_v;
     var t2_sensor_etendue = t2_aperture_area * t2_view_a;
     var t2_pixel_etendue = t2_aperture_area * t2_arcsec_p**2;
-    var t2_pixel_signal = t2_pixel_etendue * (c2_q/100); // TODO add total system transmission
+    var t2_pixel_signal = t2_pixel_etendue * c2_q * t2_transmission_factor;
 
     var t1_t2_extended_object_irradiance_factor = (1 / (t1_focal_ratio/t2_focal_ratio)**2);
     var t2_t1_extended_object_irradiance_factor = (1 / (t2_focal_ratio/t1_focal_ratio)**2);
