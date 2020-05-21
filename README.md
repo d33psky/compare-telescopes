@@ -132,7 +132,7 @@ pixel scale ["/pixel] = 206.265 [k"] * pixel size [μm/pixel] / focal length [mm
 ```
 
 With 206.265 the amount of arcseconds per radian / 1000 .
-And `arcseconds per radian = (360 / (2 * pi)) * 60 * 60` = 206.26480624709635515795...
+And `arcseconds per radian = (360 / (2 * pi)) * 60 * 60 = 206264.80624709635515795...`
 
 ### FOV
 FOV, Field Of View, is the solid angle that is projected on the camera sensor.
@@ -143,7 +143,7 @@ angle_x ["] = camera_pixels_x [pixels] * pixel scale ["/pixel]
 angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
 ```
 
-FOV is displayed in arcminutes `["/60]`.
+FOV is displayed in arcminutes `[']=["/60]`.
 
 ### Extended Object Irradiance
 Extended Object Irradiance is the radiant flux (power) received by the sensor per unit area of an extended object.

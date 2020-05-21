@@ -212,11 +212,11 @@ def print_formulas():
       It is measured in arcseconds per pixel, ["/pixel].
       Formula: pixel scale ["/pixel] = 206.265 [k"] * pixel size [μm/pixel] / focal length [mm]
       With 206.265 the amount of arcseconds per radian / 1000
-      And arcseconds per radian = (360 / (2 * pi)) * 60 * 60 = 206.26480624709635515795...
+      And arcseconds per radian = (360 / (2 * pi)) * 60 * 60 = 206264.80624709635515795...
     - FOV, Field Of View, is the solid angle that is projected on the camera sensor.
       angle_x ["] = camera_pixels_x [pixels] * pixel scale ["/pixel]
       angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
-      FOV is displayed in arcminutes ["/60]
+      FOV is displayed in arcminutes [']=["/60]
     - Extended Object Irradiance is the radiant flux (power) received by the sensor per unit area of an extended object.
       Extended Object Irradiance is measured in Watt/m^2.
       We do not compute the irradiance itself because the ratio suffices and that varies as the inverse square of the focal ratio.
