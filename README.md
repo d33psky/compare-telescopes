@@ -18,6 +18,8 @@ No camera is specified here, one is made up for the comparison with 1000x1000 pi
 
 For US-folk: replace --d1 with --di1 which accepts inches.
 
+The program comes in 2 versions; an online [web version](https://lambermont.dyndns.org/astro/code/compare-telescopes.html) and a python command line version.
+
 ## Brief output mode
 For example compare these two telescopes :
 
