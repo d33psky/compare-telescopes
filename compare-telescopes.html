@@ -1,0 +1,483 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+        pre {
+            background: #efefef;
+            padding-top: 15px;
+            padding-left: 30px;
+            overflow-x: auto;
+        }
+        code {
+            background: #efefef;
+        }
+        th {
+            background: #efefef;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Compare Telescopes</h1>
+Compare the imaging performance of 2 telescopes for astrophotography.
+<br>
+Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue and signal.
+<br/>
+Version 1.0
+<br/>
+Source code at <a href="https://github.com/d33psky/compare-telescopes/">https://github.com/d33psky/compare-telescopes/</a>
+<br>
+This is the web version of the brief output mode of the Python CLI program.
+<br>
+<br>
+<br>
+
+<div>
+    <form name="CT1" action="compare-telescopes.html">
+        <input type="button" value="Use sets of example values" name="B3" onclick="CT1_Example();">
+        <table border="0" style="border-collapse: collapse" cellpadding="3">
+            <thead>
+            <tr>
+                <th></th>
+                <th>OTA 1</th>
+                <th>OTA 2</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr>
+                <td align="right">aperture Diameter in mm</td>
+                <td>
+                    <input type="text" name="d1" size="13" tabindex="2">
+                </td>
+                <td>
+                    <input type="text" name="d2" size="13" tabindex="2">
+                </td>
+                <td align="left">[mm]</td>
+            </tr>
+
+            <tr>
+                <td align="right">aperture Diameter in inches</td>
+                <td>
+                    <input type="text" name="di1" size="13" tabindex="2">
+                </td>
+                <td>
+                    <input type="text" name="di2" size="13" tabindex="2">
+                </td>
+                <td align="left">[inch]</td>
+            </tr>
+
+            <tr>
+                <td align="right">focal Length in mm</td>
+                <td>
+                    <input type="text" name="l1" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="l2" size="13" tabindex="1">
+                </td>
+                <td align="left">[mm]</td>
+            </tr>
+
+            <tr>
+                <td align="right">focal Length in inches</td>
+                <td>
+                    <input type="text" name="li1" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="li2" size="13" tabindex="1">
+                </td>
+                <td align="left">[inch]</td>
+            </tr>
+
+            <tr>
+                <td align="right">f/ratio</td>
+                <td>
+                    <input type="text" name="f1" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="f2" size="13" tabindex="1">
+                </td>
+                <td align="left">[]</td>
+            </tr>
+
+            <tr>
+                <td align="right">focal reduction factor</td>
+                <td>
+                    <input type="text" name="r1" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="r2" size="13" tabindex="1">
+                </td>
+                <td align="left">[0-1], default 1</td>
+            </tr>
+
+            <tr>
+                <td align="right">central Obstruction percentage</td>
+                <td>
+                    <input type="text" name="o1" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="o2" size="13" tabindex="1">
+                </td>
+                <td align="left">[0-100], default 0</td>
+            </tr>
+
+            </tbody>
+            <thead>
+            <tr>
+                <th></th>
+                <th>Camera 1</th>
+                <th>Camera 2</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr>
+                <td align="right">horizontal pixels</td>
+                <td>
+                    <input type="text" name="c1h" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="c2h" size="13" tabindex="1">
+                </td>
+                <td align="left">[count], default 1000</td>
+            </tr>
+
+            <tr>
+                <td align="right">vertical pixels</td>
+                <td>
+                    <input type="text" name="c1v" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="c2v" size="13" tabindex="1">
+                </td>
+                <td align="left">[count], default 1000</td>
+            </tr>
+
+            <tr>
+                <td align="right">pixel size</td>
+                <td>
+                    <input type="text" name="c1p" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="c2p" size="13" tabindex="1">
+                </td>
+                <td align="left">[μm], default 3.8</td>
+            </tr>
+
+            <tr>
+                <td align="right">quantum efficiency</td>
+                <td>
+                    <input type="text" name="c1q" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="c2q" size="13" tabindex="1">
+                </td>
+                <td align="left">[percent], default 100</td>
+            </tr>
+
+            </tbody>
+        </table>
+        <input type="button" value="Calculate" name="B1" tabindex="4" onclick="CT1_OnClick();">
+        <input type="reset" value="Clear" name="B2" onclick="CT1_Reset();">
+    </form>
+    <pre>
+        <p id="comparison"></p>
+    </pre>
+</div>
+
+<div>
+    <h2>Performance indicators</h2>
+
+    <h3>Pixel Scale, or pixel resolution.</h3>
+    <p>Pixel Scale, or pixel resolution, is the solid angle that is projected on a single pixel.
+    It is measured in arcseconds per pixel, <code>["/pixel]</code>.</p>
+    <p>Formula:</p>
+    <pre><code>pixel scale ["/pixel] = 206.265 [k"] * pixel size [μm/pixel] / focal length [mm]
+    </code></pre>
+    <p>With 206.265 the amount of arcseconds per radian / 1000 .
+    And <code>arcseconds per radian = (360 / (2 * pi)) * 60 * 60 = 206264.80624709635515795...</code></p>
+
+    <h3>FOV</h3>
+    <p>FOV, Field Of View, is the solid angle that is projected on the camera sensor.</p>
+    <p>Formula:</p>
+    <pre><code>angle_x ["] = camera_pixels_x [pixels] * pixel scale ["/pixel]
+angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
+    </code></pre>
+    <p>FOV is displayed in arcminutes <code>[']=["/60]</code>.</p>
+
+    <h3>Extended Object Irradiance</h3>
+    <p>Extended Object Irradiance is the radiant flux (power) received by the sensor per unit area of an extended object.
+    Extended Object Irradiance is measured in <code>[W/m^2]</code>.
+    We do not compute the irradiance itself because the ratio suffices and that varies as the inverse square of the focal ratio.
+    <strong>Aperture size does not matter for Extended Object Irradiance.</strong> (It does for Point Object Irradiance).
+    An extended object is anything that is not a point source, where a point source can be a star or anything else close to the size of the angular PSF projected onto the sky.</p>
+    <p>Formula:</p>
+    <pre><code>Extended_Object_Irradiance_ratio = 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
+    </code></pre>
+    <p>The Extended Object Irradiance is also known as the Speed of a film camera where an f/4 is twice as fast as an f/5.6, meaning you need only half the time.</p>
+
+    <h3>Point Object Irradiance</h3>
+    <p>Point Object Irradiance is the radiant flux (power) received by the sensor per unit area of a point object.
+    For point objects such as stars the image irradiance varies as the aperture area ratio and the inverse square of the focal ratio.
+    <strong>Aperture size matters for Point Object Irradiance.</strong> (It does not for Extended Object Irradiance).</p>
+    <p>Formula:</p>
+    <pre><code>Point_Object_Irradiance_ratio = (ota 1 aperture area/ota 2 aperture area) * 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
+    </code></pre>
+
+    <h3>Pixel Etendue</h3>
+    <p>Pixel Etendue represents a measure of the size and angular spread of a beam of light onto a pixel.
+    Etendue is a system property of the OTA, <code>G = aperture_area * pi * NA^2</code>. It is translated to a single pixel here.
+    Etendue is also known as light-gathering or light-collecting power.</p>
+    <p>Formula:</p>
+    <pre><code>pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2/pixel]
+    </code></pre>
+    <p>Classically we should use <code>aperture_area * pi * (pixel_scale/2)^2</code> instead. But for the ratio this does not matter.</p>
+
+    <h3>Pixel Signal</h3>
+    <p>Pixel Signal is the Pixel Etendue corrected for the sensor QE and optical system transmission losses.</p>
+    <p>Formula:</p>
+    <pre><code>pixel_signal = pixel_etendue * (QE [%]/100) # TODO add total system transmission
+    </code></pre>
+</div>
+
+<script type="text/javascript">
+var ct1 = document.CT1;
+var example = 0;
+
+function CT1_Reset() {
+    // ota
+    ct1.d1.value = "";
+    ct1.di1.value = "";
+    ct1.d2.value = "";
+    ct1.di2.value = "";
+    ct1.l1.value = "";
+    ct1.li1.value = "";
+    ct1.l2.value = "";
+    ct1.li2.value = "";
+    ct1.f1.value = "";
+    ct1.f2.value = "";
+    ct1.r1.value = "";
+    ct1.r2.value = "";
+    ct1.o1.value = "";
+    ct1.o2.value = "";
+    // camera
+    ct1.c1h.value = "";
+    ct1.c2h.value = "";
+    ct1.c1v.value = "";
+    ct1.c2v.value = "";
+    ct1.c1p.value = "";
+    ct1.c2p.value = "";
+    ct1.c1q.value = "";
+    ct1.c2q.value = "";
+    // comparison results
+    document.getElementById("comparison").innerHTML = "";
+}
+
+function CT1_Example() {
+    CT1_Reset();
+    switch (example) {
+    case 0: // --d1 254 --l1 2970 --d2 100 --l2 710
+        ct1.d1.value = "254";
+        ct1.d2.value = "100";
+        ct1.l1.value = "2970";
+        ct1.l2.value = "710";
+        break;
+    case 1:
+        ct1.di1.value = "10";
+        ct1.d2.value = "100";
+        ct1.l1.value = "2970";
+        ct1.l2.value = "710";
+        break;
+    case 2: // --di1 14 --f1 10.8 --o1 0.32 --c1h 4096 --c1v 4096 --c1p 9 --c1q 65 --di2 11 --f2 10 --o2 0.31 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 75
+        ct1.di1.value = "14";
+        ct1.f1.value = "10.8";
+        ct1.o1.value = "0.32";
+        ct1.c1h.value = "4096";
+        ct1.c1v.value = "4096";
+        ct1.c1p.value = "9";
+        ct1.c1q.value = "65";
+        ct1.di2.value = "11";
+        ct1.f2.value = "10";
+        ct1.o2.value = "0.31";
+        ct1.c2h.value = "4656";
+        ct1.c2v.value = "3520";
+        ct1.c2p.value = "3.8";
+        ct1.c2q.value = "75";
+        break;
+    }
+    CT1_OnClick();
+    example += 1;
+    if (example>3) { example = 0 }
+}
+
+function CT1_OnClick() {
+    var t1_aperture_diameter = NaN;
+    var t1_focal_length = NaN;
+    var t1_focal_ratio = NaN;
+    var t1_focal_reducer = NaN;
+    t1_aperture_diameter = (ct1.d1.value>0) ? +ct1.d1.value : (ct1.di1.value>0) ? 25.4 * ct1.di1.value : NaN;
+    t1_focal_reducer = (ct1.r1.value>0) ? +ct1.r1.value : 1;
+    if (! isNaN(t1_aperture_diameter)) {
+        if (ct1.l1.value>0) {
+            t1_focal_length = ct1.l1.value * t1_focal_reducer;
+            if (ct1.f1.value>0) {
+                alert('Error 1: Need ONLY 2 out of 3 of Telescope 1 aperture Diameter, focal Length, Focal ratio');
+                return;
+            }
+            t1_focal_ratio = t1_focal_length / t1_aperture_diameter;
+        } else {
+            if (ct1.f1.value>0) {
+                t1_focal_ratio = ct1.f1.value * t1_focal_reducer;
+                t1_focal_length = t1_aperture_diameter * t1_focal_ratio;
+            } else {
+                alert('Error 2: Need 2 out of 3 of Telescope 1 aperture Diameter, focal Length, Focal ratio');
+                return;
+            }
+        }
+    } else {
+        if (ct1.l1.value>0) {
+            t1_focal_length = ct1.l1.value * t1_focal_reducer;
+            if (ct1.f1.value>0) {
+                t1_focal_ratio = ct1.f1.value * t1_focal_reducer;
+                t1_aperture_diameter = t1_focal_length / t1_focal_ratio;
+            } else {
+                alert('Error 3: Need 2 out of 3 of Telescope 1 aperture Diameter, focal Length, Focal ratio');
+                return;
+            }
+        } else {
+            alert('Error 4: Need 2 out of 3 of Telescope 1 aperture Diameter, focal Length, Focal ratio');
+            return;
+        }
+    }
+    var t1_obstruction_ratio = (ct1.o1.value>0) ? parseFloat(ct1.o1.value) : 0;
+    var t1_obstruction_diameter = t1_obstruction_ratio * t1_aperture_diameter;
+
+    var t2_aperture_diameter = NaN;
+    var t2_focal_length = NaN;
+    var t2_focal_ratio = NaN;
+    var t2_focal_reducer = NaN;
+    t2_aperture_diameter = (ct1.d2.value>0) ? +ct1.d2.value : (ct1.di2.value>0) ? 25.4 * ct1.di2.value : NaN;
+    t2_focal_reducer = (ct1.r2.value>0) ? +ct1.r2.value : 1;
+    if (! isNaN(t2_aperture_diameter)) {
+        if (ct1.l2.value>0) {
+            t2_focal_length = ct1.l2.value * t2_focal_reducer;
+            if (ct1.f2.value>0) {
+                alert('Error 5: Need ONLY 2 out of 3 of Telescope 2 aperture Diameter, focal Length, Focal ratio');
+                return;
+            }
+            t2_focal_ratio = t2_focal_length / t2_aperture_diameter;
+        } else {
+            if (ct1.f2.value>0) {
+                t2_focal_ratio = ct1.f2.value * t2_focal_reducer;
+                t2_focal_length = t2_aperture_diameter * t2_focal_ratio;
+            } else {
+                alert('Error 6: Need 2 out of 3 of Telescope 2 aperture Diameter, focal Length, Focal ratio');
+                return;
+            }
+        }
+    } else {
+        if (ct1.l2.value>0) {
+            t2_focal_length = ct1.l2.value * t2_focal_reducer;
+            if (ct1.f2.value>0) {
+                t2_focal_ratio = ct2.f1.value * t2_focal_reducer;
+                t2_aperture_diameter = t2_focal_length / t2_focal_ratio;
+            } else {
+                alert('Error 7: Need 2 out of 3 of Telescope 2 aperture Diameter, focal Length, Focal ratio');
+                return;
+            }
+        } else {
+            alert('Error 8: Need 2 out of 3 of Telescope 2 aperture Diameter, focal Length, Focal ratio');
+            return;
+        }
+    }
+    var t2_obstruction_ratio = (ct1.o2.value>0) ? parseFloat(ct1.o2.value) : 0;
+    var t2_obstruction_diameter = t2_obstruction_ratio * t2_aperture_diameter;
+
+    const arcsec_per_radian = (360 / (2 * Math.PI)) * 60 * 60; // 206265.something
+
+    var t1_obstruction_area = Math.PI * (t1_obstruction_diameter/2)**2;
+    var t1_aperture_area = Math.PI * (t1_aperture_diameter/2)**2 - t1_obstruction_area;
+    var t1_resolving_power = 1.22 * 500e-9 * 180 / (t1_aperture_diameter/1000 * Math.PI) * 3600; // for green
+    var t1_plate_scale = arcsec_per_radian/(t1_focal_ratio * t1_aperture_diameter);
+    var c1_h = (ct1.c1h.value>0) ? ct1.c1h.value : 1000; // picked some defaults to work with
+    var c1_v = (ct1.c1v.value>0) ? ct1.c1v.value : 1000;
+    var c1_p = (ct1.c1p.value>0) ? ct1.c1p.value : 3.8;
+    var c1_a = c1_h * c1_p * c1_v * c1_p;
+    var c1_q = (ct1.c1q.value>0) ? ct1.c1q.value : 100;
+
+    var t2_obstruction_area = Math.PI * (t2_obstruction_diameter/2)**2;
+    var t2_aperture_area = Math.PI * (t2_aperture_diameter/2)**2 - t2_obstruction_area;
+    var t2_resolving_power = 1.22 * 500e-9 * 180 / (t2_aperture_diameter/1000 * Math.PI) * 3600; // for green
+    var t2_plate_scale = arcsec_per_radian/(t2_focal_ratio * t2_aperture_diameter);
+    var c2_h = (ct1.c2h.value>0) ? ct1.c2h.value : c1_h;
+    var c2_v = (ct1.c2v.value>0) ? ct1.c2v.value : c1_v;
+    var c2_p = (ct1.c2p.value>0) ? ct1.c2p.value : c1_p;
+    var c2_a = c2_h * c2_p * c2_v * c2_p;
+    var c2_q = (ct1.c2q.value>0) ? ct1.c2q.value : c1_q;
+
+    var t1_arcsec_p = arcsec_per_radian/t1_focal_length * c1_p / 1000;
+    var t1_view_h = c1_h * arcsec_per_radian/t1_focal_length * c1_p / 1000;
+    var t1_view_v = c1_v * arcsec_per_radian/t1_focal_length * c1_p / 1000;
+    var t1_view_a = t1_view_h * t1_view_v;
+    var t1_sensor_etendue = t1_aperture_area * t1_view_a;
+    var t1_pixel_etendue = t1_aperture_area * t1_arcsec_p**2;
+    var t1_pixel_signal = t1_pixel_etendue * (c1_q/100); // TODO add total system transmission
+
+    var t2_arcsec_p = arcsec_per_radian/t2_focal_length * c2_p / 1000;
+    var t2_view_h = c2_h * arcsec_per_radian/t2_focal_length * c2_p / 1000;
+    var t2_view_v = c2_v * arcsec_per_radian/t2_focal_length * c2_p / 1000;
+    var t2_view_a = t2_view_h * t2_view_v;
+    var t2_sensor_etendue = t2_aperture_area * t2_view_a;
+    var t2_pixel_etendue = t2_aperture_area * t2_arcsec_p**2;
+    var t2_pixel_signal = t2_pixel_etendue * (c2_q/100); // TODO add total system transmission
+
+    var t1_t2_extended_object_irradiance_factor = (1 / (t1_focal_ratio/t2_focal_ratio)**2);
+    var t2_t1_extended_object_irradiance_factor = (1 / (t2_focal_ratio/t1_focal_ratio)**2);
+    var t1_t2_point_object_irradiance_factor = (1 / (t1_focal_ratio/t2_focal_ratio)**2) * (t1_aperture_area/t2_aperture_area);
+    var t2_t1_point_object_irradiance_factor = (1 / (t2_focal_ratio/t1_focal_ratio)**2) * (t2_aperture_area/t1_aperture_area);
+    var t1_t2_aperture_area = t1_aperture_area / t2_aperture_area;
+    var t2_t1_aperture_area = t2_aperture_area / t1_aperture_area;
+    var c1_c2_area = c1_a / c2_a;
+    var c2_c1_area = c2_a / c1_a;
+    var t1_t2_view_factor = t1_view_a / t2_view_a;
+    var t2_t1_view_factor = t2_view_a / t1_view_a;
+    var t1_t2_pixel_etendue = t1_pixel_etendue / t2_pixel_etendue;
+    var t2_t1_pixel_etendue = t2_pixel_etendue / t1_pixel_etendue;
+    var t1_t2_pixel_signal = t1_pixel_signal / t2_pixel_signal;
+    var t2_t1_pixel_signal = t2_pixel_signal / t1_pixel_signal;
+
+    var tel1 = " f/" + t1_focal_ratio.toFixed(2).padStart(5);
+    tel1 += " fl=" + t1_focal_length.toFixed(0).padStart(4) + "mm";
+    tel1 += " D=" + t1_aperture_diameter.toFixed(0).padStart(3) + "mm";
+    tel1 += " O=" + t1_obstruction_ratio.toFixed(0).padStart(2) + "%";
+    tel1 += " res=" + t1_arcsec_p.toFixed(2).padStart(3) + '"/p';
+    tel1 += " FOV=" + (t1_view_h/60).toFixed(1).padStart(4) + "'x" + (t1_view_v/60).toFixed(1).padStart(4) + "'=" + t1_t2_view_factor.toFixed(2).padStart(5) + "x";
+    tel1 += " eoi=" + t1_t2_extended_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
+    tel1 += " poi=" + t1_t2_point_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
+    tel1 += " etendue=" + t1_t2_pixel_etendue.toFixed(2).padStart(5) + 'x';
+    tel1 += " signal=" + t1_t2_pixel_signal.toFixed(2).padStart(5) + 'x';
+
+    var tel2 = " f/" + t2_focal_ratio.toFixed(2).padStart(5);
+    tel2 += " fl=" + t2_focal_length.toFixed(0).padStart(4) + "mm";
+    tel2 += " D=" + t2_aperture_diameter.toFixed(0).padStart(3) + "mm";
+    tel2 += " O=" + t2_obstruction_ratio.toFixed(0).padStart(2) + "%";
+    tel2 += " res=" + t2_arcsec_p.toFixed(2).padStart(3) + '"/p';
+    tel2 += " FOV=" + (t2_view_h/60).toFixed(1).padStart(4) + "'x" + (t2_view_v/60).toFixed(1).padStart(4) + "'=" + t2_t1_view_factor.toFixed(2).padStart(5) + "x";
+    tel2 += " eoi=" + t2_t1_extended_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
+    tel2 += " poi=" + t2_t1_point_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
+    tel2 += " etendue=" + t2_t1_pixel_etendue.toFixed(2).padStart(5) + 'x';
+    tel2 += " signal=" + t2_t1_pixel_signal.toFixed(2).padStart(5) + 'x';
+
+    var comparison = '# compare-telescopes.py' + '\n\n';
+    comparison += "Telescope 1" + tel1 + '\n';
+    comparison += "Telescope 2" + tel2;
+    document.getElementById("comparison").innerHTML = comparison;
+}
+</script>
+
+</body>
+</html>
