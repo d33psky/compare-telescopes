@@ -27,7 +27,7 @@ def main():
     parser.add_argument("--l1", required=False, type=float, help="Telescope 1 focal Length [mm]")
     parser.add_argument("--f1", required=False, type=float, help="Telescope 1 Focal ratio, defined as focal Length / aperture Diameter [dimensionless]")
     parser.add_argument("--r1", required=False, type=float, help="Telescope 1 focal Reducer factor [float]")
-    parser.add_argument("--t1", required=False, type=float, help="Telescope 1 total Transmission factor [float, 0-1]")
+    parser.add_argument("--t1", required=False, type=float, help="Telescope 1 total Transmittance factor [float, 0-1]")
     parser.add_argument("--c1h", required=False, type=int, help="Camera 1 Horizontal pixels [count]")
     parser.add_argument("--c1v", required=False, type=int, help="Camera 1 Vertical pixels [count]")
     parser.add_argument("--c1p", required=False, type=float, help="Camera 1 Pixel size [μm]")
@@ -39,7 +39,7 @@ def main():
     parser.add_argument("--l2", required=False, type=float, help="Telescope 2 focal Length [mm]")
     parser.add_argument("--f2", required=False, type=float, help="Telescope 2 Focal ratio, defined as focal Length / aperture Diameter [dimensionless]")
     parser.add_argument("--r2", required=False, type=float, help="Telescope 2 focal Reducer factor [float]")
-    parser.add_argument("--t2", required=False, type=float, help="Telescope 2 total Transmission factor [float, 0-1]")
+    parser.add_argument("--t2", required=False, type=float, help="Telescope 2 total Transmittance factor [float, 0-1]")
     parser.add_argument("--c2h", required=False, type=int, help="Camera 2 Horizontal pixels [count]")
     parser.add_argument("--c2v", required=False, type=int, help="Camera 2 Vertical pixels [count]")
     parser.add_argument("--c2p", required=False, type=float, help="Camera 2 Pixel size [μm]")
@@ -80,7 +80,7 @@ def main():
             quit(1)
     t1_obstruction_ratio = args.o1 if args.o1 else 0
     t1_obstruction_diameter = t1_obstruction_ratio * t1_aperture_diameter
-    t1_transmission_factor = args.t1 if args.t1 else 1
+    t1_transmittance_factor = args.t1 if args.t1 else 1
 
     t2_aperture_diameter = args.d2 if args.d2 else args.di2*25.4 if args.di2 else None
     t2_focal_reducer = args.r2 if args.r2 else 1
@@ -112,7 +112,7 @@ def main():
             quit(1)
     t2_obstruction_ratio = args.o2 if args.o2 else 0
     t2_obstruction_diameter = t2_obstruction_ratio * t2_aperture_diameter
-    t2_transmission_factor = args.t2 if args.t2 else 1
+    t2_transmittance_factor = args.t2 if args.t2 else 1
 
     arcsec_per_radian = (360 / (2 * math.pi)) * 60 * 60 # 206265.something
 
@@ -142,7 +142,7 @@ def main():
     t1_view_a = t1_view_h * t1_view_v
     t1_sensor_etendue = t1_aperture_area * t1_view_a
     t1_pixel_etendue = t1_aperture_area * t1_arcsec_p**2
-    t1_pixel_signal = t1_pixel_etendue * c1_q * t1_transmission_factor
+    t1_pixel_signal = t1_pixel_etendue * c1_q * t1_transmittance_factor
 
     t2_arcsec_p = arcsec_per_radian/t2_focal_length * c2_p / 1000
     t2_view_h = c2_h * arcsec_per_radian/t2_focal_length * c2_p / 1000
@@ -150,7 +150,7 @@ def main():
     t2_view_a = t2_view_h * t2_view_v
     t2_sensor_etendue = t2_aperture_area * t2_view_a
     t2_pixel_etendue = t2_aperture_area * t2_arcsec_p**2
-    t2_pixel_signal = t2_pixel_etendue * c2_q * t2_transmission_factor
+    t2_pixel_signal = t2_pixel_etendue * c2_q * t2_transmittance_factor
 
     t1_t2_extended_object_irradiance_factor = (1 / (t1_focal_ratio/t2_focal_ratio)**2)
     t2_t1_extended_object_irradiance_factor = (1 / (t2_focal_ratio/t1_focal_ratio)**2)
@@ -185,8 +185,8 @@ def main():
         print('Camera 1 pixel size {:.2f} [μm], sensor size {}x{} [pixels*pixels], {:.1f}x{:.1f} [mm*mm], sensor area {:.2f} [mm^2] ={:.2f}x larger'.format(
             c1_p, c1_h, c1_v, c1_h * c1_p/1e3, c1_v * c1_p/1e3, c1_a/1e6, c1_c2_area))
         print('Camera 1 quantum efficiency factor {:.2f}'.format(c1_q))
-        print('Telescope 1 resolution {:.2f} [arcsec/pixel], FOV {:.0f}x{:.0f} [arcmin*arcmin] ={:.2f}x larger, optical transmission factor {:.2f}'.format(
-            t1_arcsec_p, t1_view_h/60, t1_view_v/60, t1_t2_view_factor, t1_transmission_factor))
+        print('Telescope 1 resolution {:.2f} [arcsec/pixel], FOV {:.0f}x{:.0f} [arcmin*arcmin] ={:.2f}x larger, optical transmittance factor {:.2f}'.format(
+            t1_arcsec_p, t1_view_h/60, t1_view_v/60, t1_t2_view_factor, t1_transmittance_factor))
         print('Telescope 1 extended object irradiance is {:.2f}x more'.format(t1_t2_extended_object_irradiance_factor))
         print('Telescope 1    point object irradiance is {:.2f}x more'.format(t1_t2_point_object_irradiance_factor))
         print('Telescope 1 pixel etendue {:.2f} [mm^2arcsec^2] ={:.2f}x more'.format(t1_pixel_etendue, t1_t2_pixel_etendue))
@@ -201,8 +201,8 @@ def main():
         print('Camera 2 pixel size {:.2f} [μm], sensor size {}x{} [pixels*pixels], {:.1f}x{:.1f} [mm*mm], sensor area {:.2f} [mm^2] ={:.2f}x larger'.format(
             c2_p, c2_h, c2_v, c2_h * c2_p/1e3, c2_v * c2_p/1e3, c2_a/1e6, c2_c1_area))
         print('Camera 2 quantum efficiency factor {:.2f}'.format(c2_q))
-        print('Telescope 2 resolution {:.2f} [arcsec/pixel], FOV {:.0f}x{:.0f} [arcmin*arcmin] ={:.2f}x larger, optical transmission factor {:.2f}'.format(
-            t2_arcsec_p, t2_view_h/60, t2_view_v/60, t2_t1_view_factor, t2_transmission_factor))
+        print('Telescope 2 resolution {:.2f} [arcsec/pixel], FOV {:.0f}x{:.0f} [arcmin*arcmin] ={:.2f}x larger, optical transmittance factor {:.2f}'.format(
+            t2_arcsec_p, t2_view_h/60, t2_view_v/60, t2_t1_view_factor, t2_transmittance_factor))
         print('Telescope 2 extended object irradiance is {:.2f}x more'.format(t2_t1_extended_object_irradiance_factor))
         print('Telescope 2    point object irradiance is {:.2f}x more'.format(t2_t1_point_object_irradiance_factor))
         print('Telescope 2 pixel etendue {:.2f} [mm^2arcsec^2] ={:.2f}x more'.format(t2_pixel_etendue, t2_t1_pixel_etendue))
@@ -237,8 +237,8 @@ def print_formulas():
       Etendue is also known as light-gathering or light-collecting power.
       Formula: pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2/pixel]
       Classically we should use aperture_area * pi * (pixel_scale/2)^2 instead.
-    - Pixel Signal is the Pixel Etendue corrected for the sensor QE and optical system transmission losses
-      Forumula: pixel_signal = pixel_etendue * QE-factor * transmission_factor
+    - Pixel Signal is the Pixel Etendue corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.
+      Forumula: pixel_signal = pixel_etendue * QE-factor * Transmittance_factor
     """)
     print(formulas)
 

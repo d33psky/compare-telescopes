@@ -53,32 +53,32 @@ Many other parameters are optional.
 
 ## Detailed output mode
 
-1. 14" Celestron, f/10.8, central obstruction 32%, KAF-16803 camera 4096x4096, 9μm pixels, QE 65%
-2. 11" Celestron, f/10, central obstruction 31%, ASI1600MM camera 4656x3520, 3.8µm pixels, QE 75%
+1. 14" Celestron, f/10.8, central obstruction 32%, total transmittance 0.85, KAF-16803 camera 4096x4096, 9μm pixels, QE 65%
+2. 11" Celestron, f/10, central obstruction 31%, total transmittance 0.85, ASI1600MM camera 4656x3520, 3.8µm pixels, QE 75%
 
-`compare-telescopes.py --di1 14 --f1 10.8 --o1 0.32 --c1h 4096 --c1v 4096 --c1p 9 --c1q 65 --di2 11 --f2 10 --o2 0.31 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 75 --detail`
+`compare-telescopes.py --di1 14 --f1 10.8 --o1 0.32 --t1 0.85 --c1h 4096 --c1v 4096 --c1p 9 --c1q 65 --di2 11 --f2 10 --o2 0.31 --t2 0.85 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 75 --detail`
 
 ```
 OTA 1 resolving power 0.354 [arcsec], plate scale 53.708 [arcsec/mm] = 18.6 [μm/arcsec]
 OTA 1 focal ratio f/10.8, focal length 3840 [mm], aperture diameter 356 [mm], central obstruction ratio 0.32, diameter 114 [mm]
 OTA 1 aperture area 89144.84 [mm^2], collects 1.61x more photons
-Camera 1 pixel size 9.00 [μm], sensor size 4096x4096 [pixels*pixels], 36.9x36.9 [mm*mm], sensor area 1358.95 [mm^2], 5.74x larger
-Camera 1 quantum efficiency 65 [%]
-Telescope 1 resolution 0.48 [arcsec/pixel], FOV 33x33 [arcmin*arcmin], 3.04x larger
+Camera 1 pixel size 9.00 [μm], sensor size 4096x4096 [pixels*pixels], 36.9x36.9 [mm*mm], sensor area 1358.95 [mm^2] =5.74x larger
+Camera 1 quantum efficiency factor 65.00
+Telescope 1 resolution 0.48 [arcsec/pixel], FOV 33x33 [arcmin*arcmin] =3.04x larger, total transmittance factor 0.85
 Telescope 1 extended object irradiance is 0.86x more
 Telescope 1    point object irradiance is 1.38x more
-Telescope 1 pixel etendue 20828.62 [mm^2arcsec^2], 4.78x more
+Telescope 1 pixel etendue 20828.62 [mm^2arcsec^2] =4.78x more
 Telescope 1 pixel signal is 4.14x more
 ---
 OTA 2 resolving power 0.450 [arcsec], plate scale 73.824 [arcsec/mm] = 13.5 [μm/arcsec]
 OTA 2 focal ratio f/10.0, focal length 2794 [mm], aperture diameter 279 [mm], central obstruction ratio 0.31, diameter 87 [mm]
 OTA 2 aperture area 55419.56 [mm^2], collects 0.62x more photons
-Camera 2 pixel size 3.80 [μm], sensor size 4656x3520 [pixels*pixels], 17.7x13.4 [mm*mm], sensor area 236.66 [mm^2], 0.17x larger
-Camera 2 quantum efficiency 75 [%]
-Telescope 2 resolution 0.28 [arcsec/pixel], FOV 22x16 [arcmin*arcmin], 0.33x larger
+Camera 2 pixel size 3.80 [μm], sensor size 4656x3520 [pixels*pixels], 17.7x13.4 [mm*mm], sensor area 236.66 [mm^2] =0.17x larger
+Camera 2 quantum efficiency factor 75.00
+Telescope 2 resolution 0.28 [arcsec/pixel], FOV 22x16 [arcmin*arcmin] =0.33x larger, total transmittance factor 0.85
 Telescope 2 extended object irradiance is 1.17x more
 Telescope 2    point object irradiance is 0.73x more
-Telescope 2 pixel etendue 4361.42 [mm^2arcsec^2], 0.21x more
+Telescope 2 pixel etendue 4361.42 [mm^2arcsec^2] =0.21x more
 Telescope 2 pixel signal is 0.24x more
 ```
 
@@ -116,7 +116,7 @@ optional arguments:
   --f1 F1         Telescope 1 Focal ratio, defined as focal Length / aperture
                   Diameter [dimensionless]
   --r1 R1         Telescope 1 focal Reducer factor [float]
-  --t1 T1         Telescope 1 total Transmission factor [float, 0-1]
+  --t1 T1         Telescope 1 total Transmittance factor [float, 0-1]
   --c1h C1H       Camera 1 Horizontal pixels [count]
   --c1v C1V       Camera 1 Vertical pixels [count]
   --c1p C1P       Camera 1 Pixel size [μm]
@@ -128,7 +128,7 @@ optional arguments:
   --f2 F2         Telescope 2 Focal ratio, defined as focal Length / aperture
                   Diameter [dimensionless]
   --r2 R2         Telescope 2 focal Reducer factor [float]
-  --t2 T2         Telescope 2 total Transmission factor [float, 0-1]
+  --t2 T2         Telescope 2 total Transmittance factor [float, 0-1]
   --c2h C2H       Camera 2 Horizontal pixels [count]
   --c2v C2V       Camera 2 Vertical pixels [count]
   --c2p C2P       Camera 2 Pixel size [μm]
@@ -199,10 +199,10 @@ pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2/pixel]
 Classically we should use `aperture_area * pi * (pixel_scale/2)^2` instead. But for the ratio this does not matter.
 
 ### Pixel Signal
-Pixel Signal is the Pixel Etendue corrected for the sensor QE and optical system transmission losses.
+Pixel Signal is the Pixel Etendue corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.
 
 Formula:
 ```
-pixel_signal = pixel_etendue * QE-factor * Transmission-factor
+pixel_signal = pixel_etendue * QE-factor * Transmittance-factor
 ```
 
