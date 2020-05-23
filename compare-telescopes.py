@@ -224,13 +224,13 @@ def print_formulas():
     - Extended Object Irradiance is the radiant flux (power) received by the sensor per unit area of an extended object.
       Extended Object Irradiance is measured in Watt/m^2.
       We do not compute the irradiance itself because the ratio suffices and that varies as the inverse square of the focal ratio.
-      Aperture size does not matter for Extended Object Irradiance. (It does for Point Object Irradiance).
+      Aperture size alone does not matter for Extended Object Irradiance, only focal ratio does. (Aperture size does matter for Point Object Irradiance).
       An extended object is anything that is not a point source, where a point source can be a star or anything else close to the size of the angular PSF projected onto the sky.
       Formula: Extended_Object_Irradiance_ratio = 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
       The Extended Object Irradiance is also known as the Speed of a film camera where an f/4 is twice as fast as an f/5.6, meaning you need only half the time.
     - Point Object Irradiance is the radiant flux (power) received by the sensor per unit area of a point object.
       For point objects such as stars the image irradiance varies as the aperture area ratio and the inverse square of the focal ratio.
-      Aperture size matters for Point Object Irradiance. (It does not for Extended Object Irradiance).
+      Aperture size matters for Point Object Irradiance, as well as focal ratio. (Aperture size alone does not matter for Extended Object Irradiance).
       Formula: Point_Object_Irradiance_ratio = (ota 1 aperture area/ota 2 aperture area) * 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
     - Pixel Etendue represents a measure of the size and angular spread of a beam of light onto a pixel.
       Etendue is a system property of the OTA, G = aperture_area * pi * NA^2. It is translated to a single pixel here.

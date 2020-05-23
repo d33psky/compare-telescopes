@@ -213,7 +213,7 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
     <p>Extended Object Irradiance is the radiant flux (power) received by the sensor per unit area of an extended object.
     Extended Object Irradiance is measured in <code>[W/m^2]</code>.
     We do not compute the irradiance itself because the ratio suffices and that varies as the inverse square of the focal ratio.
-    <strong>Aperture size does not matter for Extended Object Irradiance.</strong> (It does for Point Object Irradiance).
+    <strong>Aperture size alone does not matter for Extended Object Irradiance, only focal ratio does.</strong> (Aperture size does matter for Point Object Irradiance).
     An extended object is anything that is not a point source, where a point source can be a star or anything else close to the size of the angular PSF projected onto the sky.</p>
     <p>Formula:</p>
     <pre><code>Extended_Object_Irradiance_ratio = 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
@@ -223,7 +223,7 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
     <h3>Point Object Irradiance</h3>
     <p>Point Object Irradiance is the radiant flux (power) received by the sensor per unit area of a point object.
     For point objects such as stars the image irradiance varies as the aperture area ratio and the inverse square of the focal ratio.
-    <strong>Aperture size matters for Point Object Irradiance.</strong> (It does not for Extended Object Irradiance).</p>
+    <strong>Aperture size matters for Point Object Irradiance, as well as focal ratio.</strong> (Aperture size alone does not for Extended Object Irradiance).</p>
     <p>Formula:</p>
     <pre><code>Point_Object_Irradiance_ratio = (ota 1 aperture area/ota 2 aperture area) * 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
     </code></pre>
