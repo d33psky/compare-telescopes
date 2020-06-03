@@ -22,9 +22,9 @@
 <h1>Compare Telescopes</h1>
 Compare the imaging performance of 2 telescopes for astrophotography.
 <br>
-Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue and signal.
+Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (et), pixel etendue (pet) and pixel signal (psi).
 <br/>
-Version 1.0
+Version 1.1
 <br/>
 Source code at <a href="https://github.com/d33psky/compare-telescopes/">https://github.com/d33psky/compare-telescopes/</a>
 <br>
@@ -88,7 +88,7 @@ This is the <a href="https://lambermont.dyndns.org/astro/code/compare-telescopes
                 <td>
                     <input type="text" name="f2" size="13" tabindex="1">
                 </td>
-                <td align="left">[]</td>
+                <td align="left">[float]</td>
             </tr>
 
             <tr>
@@ -179,6 +179,17 @@ This is the <a href="https://lambermont.dyndns.org/astro/code/compare-telescopes
                 <td align="left">[0-1], default 1</td>
             </tr>
 
+            <tr>
+                <td align="right">Binning</td>
+                <td>
+                    <input type="text" name="c1b" size="13" tabindex="1">
+                </td>
+                <td>
+                    <input type="text" name="c2b" size="13" tabindex="1">
+                </td>
+                <td align="left">[1-9], default 1</td>
+            </tr>
+
             </tbody>
         </table>
         <input type="button" value="Calculate" name="B1" tabindex="4" onclick="CT1_OnClick();">
@@ -228,14 +239,17 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
     <pre><code>Point_Object_Irradiance_ratio = (ota 1 aperture area/ota 2 aperture area) * 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
     </code></pre>
 
-    <h3>Pixel Etendue</h3>
-    <p>Pixel Etendue represents a measure of the size and angular spread of a beam of light onto a pixel.
-    Etendue is a system property of the OTA, <code>G = aperture_area * pi * NA^2</code>. It is translated to a single pixel here.
-    Etendue is also known as light-gathering or light-collecting power.</p>
+    <h3>Etendue</h3>
+    <p>Etendue is a measure of the flux gathering capability of the optical system onto the sensor. It is a purely geometric quantity.
     <p>Formula:</p>
-    <pre><code>pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2/pixel]
+    <pre><code>etendue = aperture_area [m^2] * FOV ["^2]
     </code></pre>
-    <p>Classically we should use <code>aperture_area * pi * (pixel_scale/2)^2</code> instead. But for the ratio this does not matter.</p>
+
+    <h3>Pixel Etendue</h3>
+    <p>Pixel Etendue is the etendue for a single pixel. It represents the light-gathering power of a single pixel.</p>
+    <p>Formula:</p>
+    <pre><code>pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2]
+    </code></pre>
 
     <h3>Pixel Signal</h3>
     <p>Pixel Signal is the Pixel Etendue corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.</p>
@@ -273,6 +287,8 @@ function CT1_Reset() {
     ct1.c2p.value = "";
     ct1.c1q.value = "";
     ct1.c2q.value = "";
+    ct1.c1b.value = "";
+    ct1.c2b.value = "";
     // comparison results
     document.getElementById("comparison").innerHTML = "";
 }
@@ -330,6 +346,8 @@ function CT1_OnClick() {
     var t1_focal_reducer = NaN;
     t1_aperture_diameter = (ct1.d1.value>0) ? +ct1.d1.value : (ct1.di1.value>0) ? 25.4 * ct1.di1.value : NaN;
     t1_focal_reducer = (ct1.r1.value>0) ? +ct1.r1.value : 1;
+    var t1_obstruction_ratio = (ct1.o1.value>0) ? parseFloat(ct1.o1.value) : 0;
+    var t1_transmittance_factor = (ct1.t1.value>0) ? parseFloat(ct1.t1.value) : 1;
     if (! isNaN(t1_aperture_diameter)) {
         if (ct1.l1.value>0) {
             t1_focal_length = ct1.l1.value * t1_focal_reducer;
@@ -362,9 +380,7 @@ function CT1_OnClick() {
             return;
         }
     }
-    var t1_obstruction_ratio = (ct1.o1.value>0) ? parseFloat(ct1.o1.value) : 0;
     var t1_obstruction_diameter = t1_obstruction_ratio * t1_aperture_diameter;
-    var t1_transmittance_factor = (ct1.t1.value>0) ? parseFloat(ct1.t1.value) : 1;
 
     var t2_aperture_diameter = NaN;
     var t2_focal_length = NaN;
@@ -372,6 +388,8 @@ function CT1_OnClick() {
     var t2_focal_reducer = NaN;
     t2_aperture_diameter = (ct1.d2.value>0) ? +ct1.d2.value : (ct1.di2.value>0) ? 25.4 * ct1.di2.value : NaN;
     t2_focal_reducer = (ct1.r2.value>0) ? +ct1.r2.value : 1;
+    var t2_obstruction_ratio = (ct1.o2.value>0) ? parseFloat(ct1.o2.value) : 0;
+    var t2_transmittance_factor = (ct1.t2.value>0) ? parseFloat(ct1.t2.value) : 1;
     if (! isNaN(t2_aperture_diameter)) {
         if (ct1.l2.value>0) {
             t2_focal_length = ct1.l2.value * t2_focal_reducer;
@@ -400,13 +418,15 @@ function CT1_OnClick() {
                 return;
             }
         } else {
-            alert('Error 8: Need 2 out of 3 of Telescope 2 aperture Diameter, focal Length, Focal ratio');
-            return;
+            t2_aperture_diameter = t1_aperture_diameter;
+            t2_focal_reducer = t1_focal_reducer;
+            t2_focal_length = t1_focal_length;
+            t2_focal_ratio = t1_focal_ratio;
+            t2_obstruction_ratio = t1_obstruction_ratio;
+            t2_transmittance_factor = t1_transmittance_factor;
         }
     }
-    var t2_obstruction_ratio = (ct1.o2.value>0) ? parseFloat(ct1.o2.value) : 0;
     var t2_obstruction_diameter = t2_obstruction_ratio * t2_aperture_diameter;
-    var t2_transmittance_factor = (ct1.t2.value>0) ? parseFloat(ct1.t2.value) : 1;
 
     const arcsec_per_radian = (360 / (2 * Math.PI)) * 60 * 60; // 206265.something
 
@@ -417,8 +437,7 @@ function CT1_OnClick() {
     var c1_h = (ct1.c1h.value>0) ? ct1.c1h.value : 1000; // picked some defaults to work with
     var c1_v = (ct1.c1v.value>0) ? ct1.c1v.value : 1000;
     var c1_p = (ct1.c1p.value>0) ? ct1.c1p.value : 3.8;
-    var c1_a = c1_h * c1_p * c1_v * c1_p;
-    var c1_q = (ct1.c1q.value>0) ? ct1.c1q.value : 1;
+    var c1_b = (ct1.c1b.value>0) ? ct1.c1b.value : 1;
 
     var t2_obstruction_area = Math.PI * (t2_obstruction_diameter/2)**2;
     var t2_aperture_area = Math.PI * (t2_aperture_diameter/2)**2 - t2_obstruction_area;
@@ -427,6 +446,17 @@ function CT1_OnClick() {
     var c2_h = (ct1.c2h.value>0) ? ct1.c2h.value : c1_h;
     var c2_v = (ct1.c2v.value>0) ? ct1.c2v.value : c1_v;
     var c2_p = (ct1.c2p.value>0) ? ct1.c2p.value : c1_p;
+    var c2_b = (ct1.c2b.value>0) ? ct1.c2b.value : 1;
+
+    c1_h /= c1_b;
+    c1_v /= c1_b;
+    c1_p *= c1_b;
+    c2_h /= c2_b;
+    c2_v /= c2_b;
+    c2_p *= c2_b;
+
+    var c1_a = c1_h * c1_p * c1_v * c1_p;
+    var c1_q = (ct1.c1q.value>0) ? ct1.c1q.value : 1;
     var c2_a = c2_h * c2_p * c2_v * c2_p;
     var c2_q = (ct1.c2q.value>0) ? ct1.c2q.value : c1_q;
 
@@ -434,7 +464,7 @@ function CT1_OnClick() {
     var t1_view_h = c1_h * arcsec_per_radian/t1_focal_length * c1_p / 1000;
     var t1_view_v = c1_v * arcsec_per_radian/t1_focal_length * c1_p / 1000;
     var t1_view_a = t1_view_h * t1_view_v;
-    var t1_sensor_etendue = t1_aperture_area * t1_view_a;
+    var t1_etendue = t1_aperture_area * t1_view_a / 1e6;
     var t1_pixel_etendue = t1_aperture_area * t1_arcsec_p**2;
     var t1_pixel_signal = t1_pixel_etendue * c1_q * t1_transmittance_factor;
 
@@ -442,7 +472,7 @@ function CT1_OnClick() {
     var t2_view_h = c2_h * arcsec_per_radian/t2_focal_length * c2_p / 1000;
     var t2_view_v = c2_v * arcsec_per_radian/t2_focal_length * c2_p / 1000;
     var t2_view_a = t2_view_h * t2_view_v;
-    var t2_sensor_etendue = t2_aperture_area * t2_view_a;
+    var t2_etendue = t2_aperture_area * t2_view_a / 1e6;
     var t2_pixel_etendue = t2_aperture_area * t2_arcsec_p**2;
     var t2_pixel_signal = t2_pixel_etendue * c2_q * t2_transmittance_factor;
 
@@ -456,6 +486,8 @@ function CT1_OnClick() {
     var c2_c1_area = c2_a / c1_a;
     var t1_t2_view_factor = t1_view_a / t2_view_a;
     var t2_t1_view_factor = t2_view_a / t1_view_a;
+    var t1_t2_etendue = t1_etendue / t2_etendue;
+    var t2_t1_etendue = t2_etendue / t1_etendue;
     var t1_t2_pixel_etendue = t1_pixel_etendue / t2_pixel_etendue;
     var t2_t1_pixel_etendue = t2_pixel_etendue / t1_pixel_etendue;
     var t1_t2_pixel_signal = t1_pixel_signal / t2_pixel_signal;
@@ -469,8 +501,9 @@ function CT1_OnClick() {
     tel1 += " FOV=" + (t1_view_h/60).toFixed(1).padStart(4) + "'x" + (t1_view_v/60).toFixed(1).padStart(4) + "'=" + t1_t2_view_factor.toFixed(2).padStart(5) + "x";
     tel1 += " eoi=" + t1_t2_extended_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
     tel1 += " poi=" + t1_t2_point_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
-    tel1 += " etendue=" + t1_t2_pixel_etendue.toFixed(2).padStart(5) + 'x';
-    tel1 += " signal=" + t1_t2_pixel_signal.toFixed(2).padStart(5) + 'x';
+    tel1 += " et=" + t1_t2_etendue.toFixed(2).padStart(5) + 'x';
+    tel1 += " pet=" + t1_t2_pixel_etendue.toFixed(2).padStart(5) + 'x';
+    tel1 += " psi=" + t1_t2_pixel_signal.toFixed(2).padStart(5) + 'x';
 
     var tel2 = " f/" + t2_focal_ratio.toFixed(2).padStart(5);
     tel2 += " fl=" + t2_focal_length.toFixed(0).padStart(4) + "mm";
@@ -480,8 +513,9 @@ function CT1_OnClick() {
     tel2 += " FOV=" + (t2_view_h/60).toFixed(1).padStart(4) + "'x" + (t2_view_v/60).toFixed(1).padStart(4) + "'=" + t2_t1_view_factor.toFixed(2).padStart(5) + "x";
     tel2 += " eoi=" + t2_t1_extended_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
     tel2 += " poi=" + t2_t1_point_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
-    tel2 += " etendue=" + t2_t1_pixel_etendue.toFixed(2).padStart(5) + 'x';
-    tel2 += " signal=" + t2_t1_pixel_signal.toFixed(2).padStart(5) + 'x';
+    tel2 += " et=" + t2_t1_etendue.toFixed(2).padStart(5) + 'x';
+    tel2 += " pet=" + t2_t1_pixel_etendue.toFixed(2).padStart(5) + 'x';
+    tel2 += " psi=" + t2_t1_pixel_signal.toFixed(2).padStart(5) + 'x';
 
     var python_args = "";
     python_args += (ct1.d1.value>0) ? " --d1 " +ct1.d1.value : '';
@@ -495,6 +529,7 @@ function CT1_OnClick() {
     python_args += (ct1.c1v.value>0) ? " --c1v " +ct1.c1v.value : '';
     python_args += (ct1.c1p.value>0) ? " --c1p " +ct1.c1p.value : '';
     python_args += (ct1.c1q.value>0) ? " --c1q " +ct1.c1q.value : '';
+    python_args += (ct1.c1b.value>0) ? " --c1b " +ct1.c1b.value : '';
     python_args += (ct1.d2.value>0) ? " --d2 " +ct1.d2.value : '';
     python_args += (ct1.di2.value>0) ? " --di2 " +ct1.di2.value : '';
     python_args += (ct1.o2.value>0) ? " --o2 " +ct1.o2.value : '';
@@ -506,10 +541,11 @@ function CT1_OnClick() {
     python_args += (ct1.c2v.value>0) ? " --c2v " +ct1.c2v.value : '';
     python_args += (ct1.c2p.value>0) ? " --c2p " +ct1.c2p.value : '';
     python_args += (ct1.c2q.value>0) ? " --c2q " +ct1.c2q.value : '';
+    python_args += (ct1.c2b.value>0) ? " --c2b " +ct1.c2b.value : '';
 
     var comparison = '# compare-telescopes.py' + python_args + '\n\n';
-    comparison += "Telescope 1" + tel1 + '\n';
-    comparison += "Telescope 2" + tel2;
+    comparison += "# Telescope 1" + tel1 + '\n';
+    comparison += "# Telescope 2" + tel2;
     document.getElementById("comparison").innerHTML = comparison;
 }
 </script>
