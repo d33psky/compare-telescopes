@@ -1,6 +1,6 @@
 # compare-telescopes
 Compare the imaging performance of 2 telescopes for astrophotography.\
-Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue and signal.
+Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (et), pixel etendue (pet) and pixel signal (psi).
 
 ## TL;DR example
 Compare a 100mm aperture f/6 with an 80mm aperture f/7 :
@@ -26,21 +26,21 @@ For example compare these two telescopes :
 1. 10" LX200, f = 2970mm, central obstruction 37%, KAF-16803 camera 4096x4096, 9μm pixels, QE 60%
 2. 102mm Stellarvue SV102ED, f-ratio = 6.95, ASI1600MM camera 4656x3520, 3.8µm pixels, QE 75%
 
-`compare-telescopes.py --di1 10 --l1 2970 --o1 0.37 --c1h 4096 --c1v 4096 --c1p 9 --c1q 0.60 --d2 102 --f2 6.95 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 0.75 --brief`
+`compare-telescopes.py --di1 10 --l1 2970 --o1 0.37 --c1h 4096 --c1v 4096 --c1p 9 --c1q 0.60 --d2 102 --f2 6.95 --c2h 4656 --c2v 3520 --c2p 3.8 --c2q 0.75`
 
 ``` 
-Telescope 1 f/11.69 f=2970mm D=254mm O=37% res=0.63"/p FOV=43'x43'= 0.33x eoi= 0.35x poi= 1.89x etendue= 1.71x signal= 1.37x
-Telescope 2 f/6.95  f= 709mm D=102mm O= 0% res=1.11"/p FOV=86'x65'= 3.06x eoi= 2.83x poi= 0.53x etendue= 0.58x signal= 0.73x
+Telescope 1 f/11.69 f=2970mm D=254mm O=37% res=0.63"/p FOV=43'x43'= 0.33x eoi= 0.35x poi= 1.89x et= 1.75x pet= 1.71x psi= 1.37x
+Telescope 2 f/6.95  f= 709mm D=102mm O= 0% res=1.11"/p FOV=86'x65'= 3.06x eoi= 2.83x poi= 0.53x et= 0.57x pet= 0.58x psi= 0.73x
 ```
 The LX200 has both more resolution per pixel, and 1.37x more signal thanks to the large camera pixel size than the SV102ED.
 
 This changes completely around when we use the ASI1600MM also on the LX200 :
  
-`compare-telescopes.py --di1 10 --l1 2970 --o1 0.37 --c1h 4656 --c1v 3520 --c1p 3.8 --c1q 0.75 --d2 102 --f2 6.95 --brief`
+`compare-telescopes.py --di1 10 --l1 2970 --o1 0.37 --c1h 4656 --c1v 3520 --c1p 3.8 --c1q 0.75 --d2 102 --f2 6.95`
 
 ``` 
-Telescope 1 f/11.69 f=2970mm D=254mm O=37% res=0.26"/p FOV=20'x15'= 0.06x eoi= 0.35x poi= 1.89x etendue= 0.30x signal= 0.30x
-Telescope 2 f/6.95  f= 709mm D=102mm O= 0% res=1.11"/p FOV=86'x65'=17.55x eoi= 2.83x poi= 0.53x etendue= 3.28x signal= 3.28x
+Telescope 1 f/11.69 f=2970mm D=254mm O=37% res=0.26"/p FOV=20'x15'= 0.06x eoi= 0.35x poi= 1.89x et= 0.30x pet= 0.30x psi= 0.30x
+Telescope 2 f/6.95  f= 709mm D=102mm O= 0% res=1.11"/p FOV=86'x65'=17.55x eoi= 2.83x poi= 0.53x et= 3.28x pet= 3.28x psi= 3.28x
 ```
 
 Now the LX200 has an unrealistic high resolution of 0.26"/pixel, and the refractor gets 3.28x more signal at the sensor.
@@ -64,9 +64,10 @@ OTA 1 focal ratio f/10.8, focal length 3840 [mm], aperture diameter 356 [mm], ce
 OTA 1 aperture area 89144.84 [mm^2], collects 1.61x more photons
 Camera 1 pixel size 9.00 [μm], sensor size 4096x4096 [pixels*pixels], 36.9x36.9 [mm*mm], sensor area 1358.95 [mm^2] =5.74x larger
 Camera 1 quantum efficiency factor 65.00
-Telescope 1 resolution 0.48 [arcsec/pixel], FOV 33x33 [arcmin*arcmin] =3.04x larger, total transmittance factor 0.85
+Telescope 1 resolution 0.48 [arcsec/pixel], FOV 33x33 [arcmin*arcmin] =3.04x larger, optical transmittance factor 0.85
 Telescope 1 extended object irradiance is 0.86x more
 Telescope 1    point object irradiance is 1.38x more
+Telescope 1       etendue 349446.26 [m^2arcsec^2] =4.89x more
 Telescope 1 pixel etendue 20828.62 [mm^2arcsec^2] =4.78x more
 Telescope 1 pixel signal is 4.14x more
 ---
@@ -75,9 +76,10 @@ OTA 2 focal ratio f/10.0, focal length 2794 [mm], aperture diameter 279 [mm], ce
 OTA 2 aperture area 55419.56 [mm^2], collects 0.62x more photons
 Camera 2 pixel size 3.80 [μm], sensor size 4656x3520 [pixels*pixels], 17.7x13.4 [mm*mm], sensor area 236.66 [mm^2] =0.17x larger
 Camera 2 quantum efficiency factor 75.00
-Telescope 2 resolution 0.28 [arcsec/pixel], FOV 22x16 [arcmin*arcmin] =0.33x larger, total transmittance factor 0.85
+Telescope 2 resolution 0.28 [arcsec/pixel], FOV 22x16 [arcmin*arcmin] =0.33x larger, optical transmittance factor 0.85
 Telescope 2 extended object irradiance is 1.17x more
 Telescope 2    point object irradiance is 0.73x more
+Telescope 2       etendue 71479.81 [m^2arcsec^2] =0.20x more
 Telescope 2 pixel etendue 4361.42 [mm^2arcsec^2] =0.21x more
 Telescope 2 pixel signal is 0.24x more
 ```
@@ -92,13 +94,15 @@ usage: compare-telescopes.py [-h] [--just_numbers] [--brief] [--detail]
                              [--legend] [--formulas] [--d1 D1] [--di1 DI1]
                              [--o1 O1] [--l1 L1] [--f1 F1] [--r1 R1] [--t1 T1]
                              [--c1h C1H] [--c1v C1V] [--c1p C1P] [--c1q C1Q]
-                             [--d2 D2] [--di2 DI2] [--o2 O2] [--l2 L2]
-                             [--f2 F2] [--r2 R2] [--t2 T2] [--c2h C2H]
-                             [--c2v C2V] [--c2p C2P] [--c2q C2Q]
+                             [--c1b C1B] [--d2 D2] [--di2 DI2] [--o2 O2]
+                             [--l2 L2] [--f2 F2] [--r2 R2] [--t2 T2]
+                             [--c2h C2H] [--c2v C2V] [--c2p C2P] [--c2q C2Q]
+                             [--c2b C2B]
 
 Compare the imaging performance of 2 telescopes for astrophotography.
-Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue and signal.
+Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue, pixel etendue and pixel signal.
 
+Version 1.1 pixelEtendue renamed to pet, added Etendue (of the whole system), added camera binning
 Version 1.0
 Source code at https://github.com/d33psky/compare-telescopes/
 
@@ -121,6 +125,7 @@ optional arguments:
   --c1v C1V       Camera 1 Vertical pixels [count]
   --c1p C1P       Camera 1 Pixel size [μm]
   --c1q C1Q       Camera 1 QE ratio [float, 0-1]
+  --c1b C1B       Camera 1 binning factor [integer, 1-]
   --d2 D2         Telescope 2 aperture Diameter [mm]
   --di2 DI2       Telescope 2 aperture Diameter [inch]
   --o2 O2         Telescope 2 central obstruction ratio [float, 0-1]
@@ -133,6 +138,7 @@ optional arguments:
   --c2v C2V       Camera 2 Vertical pixels [count]
   --c2p C2P       Camera 2 Pixel size [μm]
   --c2q C2Q       Camera 2 QE ratio [float, 0-1]
+  --c2b C2B       Camera 2 binning factor [integer, 1-]
 
 Use --formulas to read about the math behind the performance indicators.
 ```
@@ -186,17 +192,21 @@ Formula:
 Point_Object_Irradiance_ratio = (ota 1 aperture area/ota 2 aperture area) * 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
 ```
 
-### Pixel Etendue
-Pixel Etendue represents a measure of the size and angular spread of a beam of light onto a pixel.
-Etendue is a system property of the OTA, `G = aperture_area * pi * NA^2`. It is translated to a single pixel here.
-Etendue is also known as light-gathering or light-collecting power.
+### Etendue
+Etendue is a measure of the flux gathering capability of the optical system onto the sensor. It is a purely geometric quantity.
 
 Formula:
 ```
-pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2/pixel]
+etendue = aperture_area [m^2] * FOV ["^2]
 ```
 
-Classically we should use `aperture_area * pi * (pixel_scale/2)^2` instead. But for the ratio this does not matter.
+### Pixel Etendue
+Pixel Etendue is the etendue for a single pixel. It represents the light-gathering power of a single pixel.
+
+Formula:
+```
+pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2]
+```
 
 ### Pixel Signal
 Pixel Signal is the Pixel Etendue corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.
