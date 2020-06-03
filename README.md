@@ -8,8 +8,8 @@ Compare a 100mm aperture f/6 with an 80mm aperture f/7 :
 `compare-telescopes.py --d1 100 --f1 6 --d2 80 --f2 7`
 
 ```
-Telescope 1 f/6.00  f= 600mm D=100mm O= 0% res=1.38"/p FOV=23'x23'= 0.87x eoi= 1.36x poi= 2.13x etendue= 1.36x signal= 1.36x
-Telescope 2 f/7.00  f= 560mm D= 80mm O= 0% res=1.47"/p FOV=25'x25'= 1.15x eoi= 0.73x poi= 0.47x etendue= 0.73x signal= 0.73x
+Telescope 1 f/6.00  f= 600mm D=100mm O= 0% res=1.31"/p FOV=22'x22'= 0.87x eoi= 1.36x poi= 2.13x et= 1.36x pet= 1.36x psi= 1.36x
+Telescope 2 f/7.00  f= 560mm D= 80mm O= 0% res=1.40"/p FOV=23'x23'= 1.15x eoi= 0.73x poi= 0.47x et= 0.73x pet= 0.73x psi= 0.73x
 ```
 
 The larger and f/6 telescope is 1.36x faster than the smaller and f/7 one (but this is not the whole story, look at the other examples).
