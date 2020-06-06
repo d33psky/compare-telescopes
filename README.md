@@ -102,6 +102,7 @@ usage: compare-telescopes.py [-h] [--just_numbers] [--brief] [--detail]
 Compare the imaging performance of 2 telescopes for astrophotography.
 Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue, pixel etendue and pixel signal.
 
+Version 1.2 add defaults for aperture diameter, focal length, focal ratio
 Version 1.1 pixelEtendue renamed to pet, added Etendue (of the whole system), added camera binning
 Version 1.0
 Source code at https://github.com/d33psky/compare-telescopes/
