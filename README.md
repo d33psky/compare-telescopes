@@ -102,6 +102,7 @@ usage: compare-telescopes.py [-h] [--just_numbers] [--brief] [--detail]
 Compare the imaging performance of 2 telescopes for astrophotography.
 Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue, pixel etendue and pixel signal.
 
+Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps
 Version 1.2 add defaults for aperture diameter, focal length, focal ratio
 Version 1.1 pixelEtendue renamed to pet, added Etendue (of the whole system), added camera binning
 Version 1.0
@@ -217,3 +218,8 @@ Formula:
 pixel_signal = pixel_etendue * QE-factor * Transmittance-factor
 ```
 
+### Object Signal
+Object Signal is based on the Etendue of an extended object that fits in the FOV of both scopes, corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.
+```
+object_signal = aperture_area [m^2] * QE-factor * Transmittance_factor
+```
