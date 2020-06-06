@@ -3,6 +3,7 @@
 Compare the imaging performance of 2 telescopes for astrophotography.
 Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue, pixel etendue and pixel signal.
 
+Version 1.2 add defaults for aperture diameter, focal length, focal ratio
 Version 1.1 pixelEtendue renamed to pet, added Etendue (of the whole system), added camera binning
 Version 1.0
 Source code at https://github.com/d33psky/compare-telescopes/
@@ -68,10 +69,9 @@ def main():
         else:
             if args.f1:
                 t1_focal_ratio = args.f1 * t1_focal_reducer
-                t1_focal_length = t1_aperture_diameter * t1_focal_ratio
             else:
-                print('Need 2 out of 3 of Telescope 1 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                t1_focal_ratio = 10 * t1_focal_reducer # choose f/10
+            t1_focal_length = t1_aperture_diameter * t1_focal_ratio
     else:
         if args.l1:
             t1_focal_length = args.l1 * t1_focal_reducer
@@ -79,11 +79,15 @@ def main():
                 t1_focal_ratio = args.f1 * t1_focal_reducer
                 t1_aperture_diameter = t1_focal_length / t1_focal_ratio
             else:
-                print('Need 2 out of 3 of Telescope 1 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                t1_aperture_diameter = 100 # choose d=100mm
+                t1_focal_ratio = t1_focal_length / t1_aperture_diameter
         else:
-            print('Need 2 out of 3 of Telescope 1 aperture Diameter, Focal length, Focal ratio')
-            quit(1)
+            t1_aperture_diameter = 100  # choose d=100mm
+            if args.f1:
+                t1_focal_ratio = args.f1 * t1_focal_reducer
+            else:
+                t1_focal_ratio = 10 * t1_focal_reducer # choose f/10
+            t1_focal_length = t1_aperture_diameter * t1_focal_ratio
     t1_obstruction_diameter = t1_obstruction_ratio * t1_aperture_diameter
 
     t2_aperture_diameter = args.d2 if args.d2 else args.di2*25.4 if args.di2 else None
@@ -100,10 +104,9 @@ def main():
         else:
             if args.f2:
                 t2_focal_ratio = args.f2 * t2_focal_reducer
-                t2_focal_length = t2_aperture_diameter * t2_focal_ratio
             else:
-                print('Need 2 out of 3 of Telescope 2 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                t2_focal_ratio = 10 * t2_focal_reducer # choose f/10
+            t2_focal_length = t2_aperture_diameter * t2_focal_ratio
     else:
         if args.l2:
             t2_focal_length = args.l2 * t2_focal_reducer
@@ -111,13 +114,15 @@ def main():
                 t2_focal_ratio = args.f2 * t2_focal_reducer
                 t2_aperture_diameter = t2_focal_length / t2_focal_ratio
             else:
-                print('Need 2 out of 3 of Telescope 2 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                t2_aperture_diameter = 100 # choose d=100mm
+                t2_focal_ratio = t2_focal_length / t2_aperture_diameter
         else:
             t2_aperture_diameter = t1_aperture_diameter
-            t2_focal_reducer = t1_focal_reducer
-            t2_focal_length = t1_focal_length
-            t2_focal_ratio = t1_focal_ratio
+            if args.f2:
+                t2_focal_ratio = args.f2 * t2_focal_reducer
+            else:
+                t2_focal_ratio = t1_focal_ratio
+            t2_focal_length = t2_aperture_diameter * t2_focal_ratio
             t2_obstruction_ratio = t1_obstruction_ratio
             t2_transmittance_factor = t1_transmittance_factor
     t2_obstruction_diameter = t2_obstruction_ratio * t2_aperture_diameter
