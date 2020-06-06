@@ -12,6 +12,111 @@ import math
 import textwrap
 
 
+def scope(Name):
+    d = None
+    di = None
+    l = None
+    f = None
+    o = None
+    name = Name.upper()
+    if name == 'C9.25':
+        di = 9.25
+        f = 10
+        o = 0.36
+    elif name == 'C11':
+        di = 11
+        f = 10
+        o = 0.34
+    elif name == 'C14':
+        di = 14
+        f = 10
+        o = 0.32
+    elif name == 'LX200-10':
+        di = 10
+        f = 10
+        o = 0.37
+    elif name == 'SV102ED':
+        d = 102
+        l = 710
+        o = 0
+    else:
+        print('{} is an unknown scope'.format(Name))
+        quit(1)
+    return d, di, l, f, o
+
+
+def camera(Name):
+    h = None
+    v = None
+    p = None
+    q = None
+    name = Name.upper()
+    if name == 'ASI6200': # https://compare.astronomy-imaging-camera.com/
+        h = 9576
+        v = 6388
+        p = 3.76
+        q = 0.80
+    elif name == 'ASI1600' or name == 'AtikHorizonII':
+        h = 4656
+        v = 3520
+        p = 3.8
+        q = 0.60
+    elif name == 'ASI533':
+        h = 3008
+        v = 3008
+        p = 3.76
+        q = 0.80
+    elif name == 'ASI183':
+        h = 5496
+        v = 3672
+        p = 2.40
+        q = 0.84
+    elif name == 'ATIK383': # https://www.atik-cameras.com/product/atik-383l-plus/
+        h = 3354
+        v = 2529
+        p = 5.4
+        q = 0.56
+    elif name == 'ATIKONE6':
+        h = 2749
+        v = 2199
+        p = 4.54
+        q = 0.66
+    elif name == 'ATIKONE9':
+        h = 3380
+        v = 2704
+        p = 3.69
+        q = 0.77
+    elif name == 'ATIK16200': # https://www.atik-cameras.com/product/atik-16200/
+        h = 4499
+        v = 3599
+        p = 6.0
+        q = 0.6
+    elif name == 'ATIK11000':
+        h = 4007
+        v = 2671
+        p = 9.0
+        q = 0.5
+    elif name == 'EOS40D': # https://astrophotography.app/EOS.php
+        h = 3888
+        v = 2592
+        p = 5.7
+        q = 0.33
+    elif name == 'EOS6D':
+        h = 5472
+        v = 3648
+        p = 6.54
+        q = 0.5
+    elif name == 'SONYA7S':
+        h = 4240
+        v = 2832
+        p = 8.4
+        q = 0.65
+    else:
+        print('{} is an unknown camera'.format(Name))
+        quit(1)
+    return h, v, p, q
+
+
 def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -23,6 +128,7 @@ def main():
     parser.add_argument("--legend", action="store_true", help="Legend")
     parser.add_argument("--formulas", action="store_true", help="Show the used formulas")
 
+    parser.add_argument("--s1", required=False, type=str, help="Scope 1")
     parser.add_argument("--d1", required=False, type=float, help="Telescope 1 aperture Diameter [mm]")
     parser.add_argument("--di1", required=False, type=float, help="Telescope 1 aperture Diameter [inch]")
     parser.add_argument("--o1", required=False, type=float, help="Telescope 1 central Obstruction ratio [float, 0-1]")
@@ -30,12 +136,14 @@ def main():
     parser.add_argument("--f1", required=False, type=float, help="Telescope 1 Focal ratio, defined as focal Length / aperture Diameter [dimensionless]")
     parser.add_argument("--r1", required=False, type=float, help="Telescope 1 focal Reducer factor [float]")
     parser.add_argument("--t1", required=False, type=float, help="Telescope 1 total Transmittance factor [float, 0-1]")
+    parser.add_argument("--c1", required=False, type=str, help="Camera 1")
     parser.add_argument("--c1h", required=False, type=int, help="Camera 1 Horizontal pixels [count]")
     parser.add_argument("--c1v", required=False, type=int, help="Camera 1 Vertical pixels [count]")
     parser.add_argument("--c1p", required=False, type=float, help="Camera 1 Pixel size [μm]")
     parser.add_argument("--c1q", required=False, type=float, help="Camera 1 QE ratio [float, 0-1]")
     parser.add_argument("--c1b", required=False, type=float, help="Camera 1 binning factor [integer, 1-]")
 
+    parser.add_argument("--s2", required=False, type=str, help="Scope 2")
     parser.add_argument("--d2", required=False, type=float, help="Telescope 2 aperture Diameter [mm]")
     parser.add_argument("--di2", required=False, type=float, help="Telescope 2 aperture Diameter [inch]")
     parser.add_argument("--o2", required=False, type=float, help="Telescope 2 central obstruction ratio [float, 0-1]")
@@ -43,6 +151,7 @@ def main():
     parser.add_argument("--f2", required=False, type=float, help="Telescope 2 Focal ratio, defined as focal Length / aperture Diameter [dimensionless]")
     parser.add_argument("--r2", required=False, type=float, help="Telescope 2 focal Reducer factor [float]")
     parser.add_argument("--t2", required=False, type=float, help="Telescope 2 total Transmittance factor [float, 0-1]")
+    parser.add_argument("--c2", required=False, type=str, help="Camera 2")
     parser.add_argument("--c2h", required=False, type=int, help="Camera 2 Horizontal pixels [count]")
     parser.add_argument("--c2v", required=False, type=int, help="Camera 2 Vertical pixels [count]")
     parser.add_argument("--c2p", required=False, type=float, help="Camera 2 Pixel size [μm]")
@@ -53,6 +162,15 @@ def main():
     if args.formulas:
         print_formulas()
         quit(0)
+
+    if args.s1:
+        args.d1, args.di1, args.l1, args.f1, args.o1 = scope(args.s1)
+    if args.s2:
+        args.d2, args.di2, args.l2, args.f2, args.o2 = scope(args.s2)
+    if args.c1:
+        args.c1h, args.c1v, args.c1p, args.c1q = camera(args.c1)
+    if args.c2:
+        args.c2h, args.c2v, args.c2p, args.c2q = camera(args.c2)
 
     t1_aperture_diameter = args.d1 if args.d1 else args.di1*25.4 if args.di1 else None
     t1_focal_reducer = args.r1 if args.r1 else 1
@@ -265,3 +383,4 @@ def print_formulas():
 
 if __name__ == '__main__':
     main()
+
