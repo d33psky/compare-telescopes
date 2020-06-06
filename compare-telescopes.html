@@ -511,7 +511,7 @@ function CT1_OnClick() {
     var tel1 = " f/" + t1_focal_ratio.toFixed(2).padStart(5);
     tel1 += " fl=" + t1_focal_length.toFixed(0).padStart(4) + "mm";
     tel1 += " D=" + t1_aperture_diameter.toFixed(0).padStart(3) + "mm";
-    tel1 += " O=" + t1_obstruction_ratio.toFixed(0).padStart(2) + "%";
+    tel1 += " O=" + (100*t1_obstruction_ratio).toFixed(0).padStart(2) + "%";
     tel1 += " res=" + t1_arcsec_p.toFixed(2).padStart(3) + '"/p';
     tel1 += " FOV=" + (t1_view_h/60).toFixed(1).padStart(4) + "'x" + (t1_view_v/60).toFixed(1).padStart(4) + "'=" + t1_t2_view_factor.toFixed(2).padStart(5) + "x";
     tel1 += " eoi=" + t1_t2_extended_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
@@ -523,7 +523,7 @@ function CT1_OnClick() {
     var tel2 = " f/" + t2_focal_ratio.toFixed(2).padStart(5);
     tel2 += " fl=" + t2_focal_length.toFixed(0).padStart(4) + "mm";
     tel2 += " D=" + t2_aperture_diameter.toFixed(0).padStart(3) + "mm";
-    tel2 += " O=" + t2_obstruction_ratio.toFixed(0).padStart(2) + "%";
+    tel2 += " O=" + (100*t2_obstruction_ratio).toFixed(0).padStart(2) + "%";
     tel2 += " res=" + t2_arcsec_p.toFixed(2).padStart(3) + '"/p';
     tel2 += " FOV=" + (t2_view_h/60).toFixed(1).padStart(4) + "'x" + (t2_view_v/60).toFixed(1).padStart(4) + "'=" + t2_t1_view_factor.toFixed(2).padStart(5) + "x";
     tel2 += " eoi=" + t2_t1_extended_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
