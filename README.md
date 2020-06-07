@@ -1,6 +1,6 @@
 # compare-telescopes
 Compare the imaging performance of 2 telescopes for astrophotography.\
-Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (et), pixel etendue (pet) and pixel signal (psi).
+Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 
 ## TL;DR example
 Compare a 100mm aperture f/6 with an 80mm aperture f/7 :

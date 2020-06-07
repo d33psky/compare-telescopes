@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Compare the imaging performance of 2 telescopes for astrophotography.
-Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue, pixel etendue and pixel signal.
+Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 
 Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps
 Version 1.2 add defaults for aperture diameter, focal length, focal ratio
