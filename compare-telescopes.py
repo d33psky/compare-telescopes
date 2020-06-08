@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
 Compare the imaging performance of 2 telescopes for astrophotography.
-Performance indicators are: pixel scale, FOV, extended object irradiance, point object irradiance, etendue, pixel etendue and pixel signal.
+Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 
+Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps
+Version 1.2 add defaults for aperture diameter, focal length, focal ratio
 Version 1.1 pixelEtendue renamed to pet, added Etendue (of the whole system), added camera binning
 Version 1.0
 Source code at https://github.com/d33psky/compare-telescopes/
@@ -186,10 +188,9 @@ def main():
         else:
             if args.f1:
                 t1_focal_ratio = args.f1 * t1_focal_reducer
-                t1_focal_length = t1_aperture_diameter * t1_focal_ratio
             else:
-                print('Need 2 out of 3 of Telescope 1 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                t1_focal_ratio = 10 * t1_focal_reducer # choose f/10
+            t1_focal_length = t1_aperture_diameter * t1_focal_ratio
     else:
         if args.l1:
             t1_focal_length = args.l1 * t1_focal_reducer
@@ -197,11 +198,15 @@ def main():
                 t1_focal_ratio = args.f1 * t1_focal_reducer
                 t1_aperture_diameter = t1_focal_length / t1_focal_ratio
             else:
-                print('Need 2 out of 3 of Telescope 1 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                t1_aperture_diameter = 100 # choose d=100mm
+                t1_focal_ratio = t1_focal_length / t1_aperture_diameter
         else:
-            print('Need 2 out of 3 of Telescope 1 aperture Diameter, Focal length, Focal ratio')
-            quit(1)
+            t1_aperture_diameter = 100  # choose d=100mm
+            if args.f1:
+                t1_focal_ratio = args.f1 * t1_focal_reducer
+            else:
+                t1_focal_ratio = 10 * t1_focal_reducer # choose f/10
+            t1_focal_length = t1_aperture_diameter * t1_focal_ratio
     t1_obstruction_diameter = t1_obstruction_ratio * t1_aperture_diameter
 
     t2_aperture_diameter = args.d2 if args.d2 else args.di2*25.4 if args.di2 else None
@@ -218,10 +223,9 @@ def main():
         else:
             if args.f2:
                 t2_focal_ratio = args.f2 * t2_focal_reducer
-                t2_focal_length = t2_aperture_diameter * t2_focal_ratio
             else:
-                print('Need 2 out of 3 of Telescope 2 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                t2_focal_ratio = 10 * t2_focal_reducer # choose f/10
+            t2_focal_length = t2_aperture_diameter * t2_focal_ratio
     else:
         if args.l2:
             t2_focal_length = args.l2 * t2_focal_reducer
@@ -229,13 +233,15 @@ def main():
                 t2_focal_ratio = args.f2 * t2_focal_reducer
                 t2_aperture_diameter = t2_focal_length / t2_focal_ratio
             else:
-                print('Need 2 out of 3 of Telescope 2 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                t2_aperture_diameter = 100 # choose d=100mm
+                t2_focal_ratio = t2_focal_length / t2_aperture_diameter
         else:
             t2_aperture_diameter = t1_aperture_diameter
-            t2_focal_reducer = t1_focal_reducer
-            t2_focal_length = t1_focal_length
-            t2_focal_ratio = t1_focal_ratio
+            if args.f2:
+                t2_focal_ratio = args.f2 * t2_focal_reducer
+            else:
+                t2_focal_ratio = t1_focal_ratio
+            t2_focal_length = t2_aperture_diameter * t2_focal_ratio
             t2_obstruction_ratio = t1_obstruction_ratio
             t2_transmittance_factor = t1_transmittance_factor
     t2_obstruction_diameter = t2_obstruction_ratio * t2_aperture_diameter
@@ -305,13 +311,16 @@ def main():
     t1_t2_pixel_signal = t1_pixel_signal / t2_pixel_signal
     t2_t1_pixel_signal = t2_pixel_signal / t1_pixel_signal
 
+    t1_t2_object_signal = t1_aperture_area/t2_aperture_area * c1_q/c2_q * t1_transmittance_factor/t2_transmittance_factor
+    t2_t1_object_signal = t2_aperture_area/t1_aperture_area * c2_q/c1_q * t2_transmittance_factor/t1_transmittance_factor
+
     if args.brief or not args.detail:
-        print('Telescope 1 f/{:<5.2f} f={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x et={:5.2f}x pet={:5.2f}x psi={:5.2f}x'.format(
-            t1_focal_ratio, t1_focal_length, t1_aperture_diameter, 100*t1_obstruction_ratio, t1_arcsec_p, t1_view_h/60, t1_view_v/60, t1_t2_view_factor, t1_t2_extended_object_irradiance_factor, t1_t2_point_object_irradiance_factor, t1_t2_etendue, t1_t2_pixel_etendue, t1_t2_pixel_signal))
-        print('Telescope 2 f/{:<5.2f} f={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x et={:5.2f}x pet={:5.2f}x psi={:5.2f}x'.format(
-            t2_focal_ratio, t2_focal_length, t2_aperture_diameter, 100*t2_obstruction_ratio, t2_arcsec_p, t2_view_h/60, t2_view_v/60, t2_t1_view_factor, t2_t1_extended_object_irradiance_factor, t2_t1_point_object_irradiance_factor, t2_t1_etendue, t2_t1_pixel_etendue, t2_t1_pixel_signal))
+        print('Telescope 1 f/{:<5.2f} l={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x e={:5.2f}x pe={:5.2f}x ps={:5.2f}x os={:5.2f}x'.format(
+            t1_focal_ratio, t1_focal_length, t1_aperture_diameter, 100*t1_obstruction_ratio, t1_arcsec_p, t1_view_h/60, t1_view_v/60, t1_t2_view_factor, t1_t2_extended_object_irradiance_factor, t1_t2_point_object_irradiance_factor, t1_t2_etendue, t1_t2_pixel_etendue, t1_t2_pixel_signal, t1_t2_object_signal))
+        print('Telescope 2 f/{:<5.2f} l={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x e={:5.2f}x pe={:5.2f}x ps={:5.2f}x os={:5.2f}x'.format(
+            t2_focal_ratio, t2_focal_length, t2_aperture_diameter, 100*t2_obstruction_ratio, t2_arcsec_p, t2_view_h/60, t2_view_v/60, t2_t1_view_factor, t2_t1_extended_object_irradiance_factor, t2_t1_point_object_irradiance_factor, t2_t1_etendue, t2_t1_pixel_etendue, t2_t1_pixel_signal, t2_t1_object_signal))
         if args.legend:
-            print('# f-number Focallength apertureDiameter Obstruction resolution FieldOfView ExtendedObjectIrradiance PixelOI Etendue pixelEtendue pixelSignal')
+            print('# F-number focalLength apertureDiameter Obstruction RESolution FieldOfView ExtendedObjectIrradiance PixelOI Etendue PixelEtendue PixelSignal ObjectSignal')
     else:
         print('---')
         print('OTA 1 resolving power {:.3f} [arcsec], plate scale {:.3f} [arcsec/mm] = {:.1f} [μm/arcsec]'.format(
@@ -330,6 +339,7 @@ def main():
         print('Telescope 1       etendue {:.2f} [m^2arcsec^2] ={:.2f}x more'.format(t1_etendue, t1_t2_etendue))
         print('Telescope 1 pixel etendue {:.2f} [mm^2arcsec^2] ={:.2f}x more'.format(t1_pixel_etendue, t1_t2_pixel_etendue))
         print('Telescope 1 pixel signal is {:.2f}x more'.format(t1_t2_pixel_signal))
+        print('Telescope 1 object signal is {:.2f}x more'.format(t1_t2_object_signal))
         print('---')
         print('OTA 2 resolving power {:.3f} [arcsec], plate scale {:.3f} [arcsec/mm] = {:.1f} [μm/arcsec]'.format(
             t2_resolving_power, t2_plate_scale, 1000/t2_plate_scale))
@@ -347,6 +357,7 @@ def main():
         print('Telescope 2       etendue {:.2f} [m^2arcsec^2] ={:.2f}x more'.format(t2_etendue, t2_t1_etendue))
         print('Telescope 2 pixel etendue {:.2f} [mm^2arcsec^2] ={:.2f}x more'.format(t2_pixel_etendue, t2_t1_pixel_etendue))
         print('Telescope 2 pixel signal is {:.2f}x more'.format(t2_t1_pixel_signal))
+        print('Telescope 2 object signal is {:.2f}x more'.format(t2_t1_object_signal))
         print('---')
 
 
@@ -377,7 +388,9 @@ def print_formulas():
     - Pixel Etendue is the etendue for a single pixel. It represents the light-gathering power of a single pixel.
       Formula: pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2]
     - Pixel Signal is the Pixel Etendue corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.
-      Forumula: pixel_signal = pixel_etendue * QE-factor * Transmittance_factor
+      Formula: pixel_signal = pixel_etendue * QE-factor * Transmittance_factor
+    - Object Signal is based on the Etendue of an extended object that fits in the FOV of both scopes, corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.
+      Formula: object_signal = aperture_area [m^2] * QE-factor * Transmittance_factor
     """)
     print(formulas)
 

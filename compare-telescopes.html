@@ -22,9 +22,9 @@
 <h1>Compare Telescopes</h1>
 Compare the imaging performance of 2 telescopes for astrophotography.
 <br>
-Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (et), pixel etendue (pet) and pixel signal (psi).
+Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 <br/>
-Version 1.1
+Version 1.3
 <br/>
 Source code at <a href="https://github.com/d33psky/compare-telescopes/">https://github.com/d33psky/compare-telescopes/</a>
 <br>
@@ -55,7 +55,7 @@ This is the <a href="https://lambermont.dyndns.org/astro/code/compare-telescopes
                 <td>
                     <input type="text" name="d2" size="13" tabindex="2">
                 </td>
-                <td align="left">[mm]</td>
+                <td align="left">[mm], default 100</td>
             </tr>
 
             <tr>
@@ -77,7 +77,7 @@ This is the <a href="https://lambermont.dyndns.org/astro/code/compare-telescopes
                 <td>
                     <input type="text" name="l2" size="13" tabindex="1">
                 </td>
-                <td align="left">[mm]</td>
+                <td align="left">[mm], default 1000</td>
             </tr>
 
             <tr>
@@ -88,7 +88,7 @@ This is the <a href="https://lambermont.dyndns.org/astro/code/compare-telescopes
                 <td>
                     <input type="text" name="f2" size="13" tabindex="1">
                 </td>
-                <td align="left">[float]</td>
+                <td align="left">[float], default 10</td>
             </tr>
 
             <tr>
@@ -256,11 +256,18 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
     <p>Formula:</p>
     <pre><code>pixel_signal = pixel_etendue * QE-factor * Transmittance-factor
     </code></pre>
+
+    <h3>Object Signal</h3>
+    <p>Object Signal is based on the Etendue of an extended object that fits in the FOV of both scopes, corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.</p>
+    <pre><code>Formula: object_signal = aperture_area [m^2] * QE-factor * Transmittance_factor
+    </code></pre>
 </div>
 
 <div>
     <h2>History</h2>
     <ul>
+        <li>Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps</li>
+        <li>Version 1.2 add defaults for aperture diameter, focal length, focal ratio</li>
         <li>Version 1.1 pixelEtendue renamed to pet, added Etendue (of the whole system), added camera binning</li>
         <li>Version 1.0</li>
     </ul>
@@ -367,11 +374,10 @@ function CT1_OnClick() {
         } else {
             if (ct1.f1.value>0) {
                 t1_focal_ratio = ct1.f1.value * t1_focal_reducer;
-                t1_focal_length = t1_aperture_diameter * t1_focal_ratio;
             } else {
-                alert('Error 2: Need 2 out of 3 of Telescope 1 aperture Diameter, focal Length, Focal ratio');
-                return;
+                t1_focal_ratio = 10 * t1_focal_reducer; // choose f/10
             }
+            t1_focal_length = t1_aperture_diameter * t1_focal_ratio;
         }
     } else {
         if (ct1.l1.value>0) {
@@ -380,12 +386,17 @@ function CT1_OnClick() {
                 t1_focal_ratio = ct1.f1.value * t1_focal_reducer;
                 t1_aperture_diameter = t1_focal_length / t1_focal_ratio;
             } else {
-                alert('Error 3: Need 2 out of 3 of Telescope 1 aperture Diameter, focal Length, Focal ratio');
-                return;
+                t1_aperture_diameter = 100; // choose d=100mm
+                t1_focal_ratio = t1_focal_length / t1_aperture_diameter;
             }
         } else {
-            alert('Error 4: Need 2 out of 3 of Telescope 1 aperture Diameter, focal Length, Focal ratio');
-            return;
+            t1_aperture_diameter = 100; // choose d=100mm
+            if (ct1.f1.value>0) {
+                t1_focal_ratio = ct1.f1.value * t1_focal_reducer;
+            } else {
+                t1_focal_ratio = 10 * t1_focal_reducer; // choose f/10
+            }
+            t1_focal_length = t1_aperture_diameter * t1_focal_ratio;
         }
     }
     var t1_obstruction_diameter = t1_obstruction_ratio * t1_aperture_diameter;
@@ -409,27 +420,29 @@ function CT1_OnClick() {
         } else {
             if (ct1.f2.value>0) {
                 t2_focal_ratio = ct1.f2.value * t2_focal_reducer;
-                t2_focal_length = t2_aperture_diameter * t2_focal_ratio;
             } else {
-                alert('Error 6: Need 2 out of 3 of Telescope 2 aperture Diameter, focal Length, Focal ratio');
-                return;
+                t2_focal_ratio = 10 * t2_focal_reducer; // choose f/10
             }
+            t2_focal_length = t2_aperture_diameter * t2_focal_ratio;
         }
     } else {
         if (ct1.l2.value>0) {
             t2_focal_length = ct1.l2.value * t2_focal_reducer;
             if (ct1.f2.value>0) {
-                t2_focal_ratio = ct2.f1.value * t2_focal_reducer;
+                t2_focal_ratio = ct1.f2.value * t2_focal_reducer;
                 t2_aperture_diameter = t2_focal_length / t2_focal_ratio;
             } else {
-                alert('Error 7: Need 2 out of 3 of Telescope 2 aperture Diameter, focal Length, Focal ratio');
-                return;
+                t2_aperture_diameter = 100; // choose d=100mm
+                t2_focal_ratio = t2_focal_length / t2_aperture_diameter;
             }
         } else {
             t2_aperture_diameter = t1_aperture_diameter;
-            t2_focal_reducer = t1_focal_reducer;
-            t2_focal_length = t1_focal_length;
-            t2_focal_ratio = t1_focal_ratio;
+            if (ct1.f2.value>0) {
+                t2_focal_ratio = ct1.f2.value * t2_focal_reducer;
+            } else {
+                t2_focal_ratio = t1_focal_ratio;
+            }
+            t2_focal_length = t2_aperture_diameter * t2_focal_ratio;
             t2_obstruction_ratio = t1_obstruction_ratio;
             t2_transmittance_factor = t1_transmittance_factor;
         }
@@ -501,29 +514,34 @@ function CT1_OnClick() {
     var t1_t2_pixel_signal = t1_pixel_signal / t2_pixel_signal;
     var t2_t1_pixel_signal = t2_pixel_signal / t1_pixel_signal;
 
+    var t1_t2_object_signal = t1_aperture_area/t2_aperture_area * c1_q/c2_q * t1_transmittance_factor/t2_transmittance_factor;
+    var t2_t1_object_signal = t2_aperture_area/t1_aperture_area * c2_q/c1_q * t2_transmittance_factor/t1_transmittance_factor;
+
     var tel1 = " f/" + t1_focal_ratio.toFixed(2).padStart(5);
     tel1 += " fl=" + t1_focal_length.toFixed(0).padStart(4) + "mm";
     tel1 += " D=" + t1_aperture_diameter.toFixed(0).padStart(3) + "mm";
-    tel1 += " O=" + t1_obstruction_ratio.toFixed(0).padStart(2) + "%";
+    tel1 += " O=" + (100*t1_obstruction_ratio).toFixed(0).padStart(2) + "%";
     tel1 += " res=" + t1_arcsec_p.toFixed(2).padStart(3) + '"/p';
     tel1 += " FOV=" + (t1_view_h/60).toFixed(1).padStart(4) + "'x" + (t1_view_v/60).toFixed(1).padStart(4) + "'=" + t1_t2_view_factor.toFixed(2).padStart(5) + "x";
     tel1 += " eoi=" + t1_t2_extended_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
     tel1 += " poi=" + t1_t2_point_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
-    tel1 += " et=" + t1_t2_etendue.toFixed(2).padStart(5) + 'x';
-    tel1 += " pet=" + t1_t2_pixel_etendue.toFixed(2).padStart(5) + 'x';
-    tel1 += " psi=" + t1_t2_pixel_signal.toFixed(2).padStart(5) + 'x';
+    tel1 += " e=" + t1_t2_etendue.toFixed(2).padStart(5) + 'x';
+    tel1 += " pe=" + t1_t2_pixel_etendue.toFixed(2).padStart(5) + 'x';
+    tel1 += " ps=" + t1_t2_pixel_signal.toFixed(2).padStart(5) + 'x';
+    tel1 += " os=" + t1_t2_object_signal.toFixed(2).padStart(5) + 'x';
 
     var tel2 = " f/" + t2_focal_ratio.toFixed(2).padStart(5);
     tel2 += " fl=" + t2_focal_length.toFixed(0).padStart(4) + "mm";
     tel2 += " D=" + t2_aperture_diameter.toFixed(0).padStart(3) + "mm";
-    tel2 += " O=" + t2_obstruction_ratio.toFixed(0).padStart(2) + "%";
+    tel2 += " O=" + (100*t2_obstruction_ratio).toFixed(0).padStart(2) + "%";
     tel2 += " res=" + t2_arcsec_p.toFixed(2).padStart(3) + '"/p';
     tel2 += " FOV=" + (t2_view_h/60).toFixed(1).padStart(4) + "'x" + (t2_view_v/60).toFixed(1).padStart(4) + "'=" + t2_t1_view_factor.toFixed(2).padStart(5) + "x";
     tel2 += " eoi=" + t2_t1_extended_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
     tel2 += " poi=" + t2_t1_point_object_irradiance_factor.toFixed(2).padStart(5) + 'x';
-    tel2 += " et=" + t2_t1_etendue.toFixed(2).padStart(5) + 'x';
-    tel2 += " pet=" + t2_t1_pixel_etendue.toFixed(2).padStart(5) + 'x';
-    tel2 += " psi=" + t2_t1_pixel_signal.toFixed(2).padStart(5) + 'x';
+    tel2 += " e=" + t2_t1_etendue.toFixed(2).padStart(5) + 'x';
+    tel2 += " pe=" + t2_t1_pixel_etendue.toFixed(2).padStart(5) + 'x';
+    tel2 += " ps=" + t2_t1_pixel_signal.toFixed(2).padStart(5) + 'x';
+    tel2 += " os=" + t2_t1_object_signal.toFixed(2).padStart(5) + 'x';
 
     var python_args = "";
     python_args += (ct1.d1.value>0) ? " --d1 " +ct1.d1.value : '';
