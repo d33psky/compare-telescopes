@@ -20,26 +20,40 @@ import json
 json_data = """
 {
     "scopes": {
+        "APO130": { "d": 130, "l": 650 },
+        "CUSTOM1": { "d": 254, "l": 2970, "o": 0.37 },
         "C9.25": { "di": 9.25, "f": 10, "o": 0.36 },
         "C11": { "di": 11, "f": 10, "o": 0.34 }, 
         "C14": { "di": 14, "f": 10, "o": 0.32 }, 
+        "ED80": { "d": 80, "l": 600 },
+        "GSRC10": { "d": 254, "l": 2000 },
+        "HUBBLE": { "d": 2400, "l": 57600, "o": 0.127, "t": 0.85 },
         "LX200-10": { "di": 10, "f": 10, "o": 0.37 }, 
-        "SV102ED": { "d": 102, "l": 710 }
+        "ONTC1010": { "d": 254, "l": 1000, "o": 0.31 }, 
+        "ONTC1212": { "d": 303, "l": 1200, "o": 0.29 }, 
+        "SV102ED": { "d": 102, "l": 710 },
+        "ELT": { "d": 39300, "l": 743400, "o": 0.104 },
+        "VLT": { "d": 8200,  "l": 120000, "o": 0.136 }
     },
     "cameras": {
+        "ASI120": { "h": 1280, "v": 960, "p": 3.75, "q": 0.80 },
         "ASI6200": { "h": 9576, "v": 6388, "p": 3.76, "q": 0.80 },
         "ASI1600": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
-        "AtikHorizonII": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
         "ASI533": { "h": 3008, "v": 3008, "p": 3.76, "q": 0.80 },
         "ASI183": { "h": 5496, "v": 3672, "p": 2.40, "q": 0.84 },
+        "ATIK11000": { "h": 4007, "v": 2671, "p": 9.0, "q": 0.5 },
+        "ATIK16200": { "h": 4499, "v": 3599, "p": 6.0, "q": 0.6 },
         "ATIK383": { "h": 3354, "v": 2529, "p": 5.4, "q": 0.56 },
         "ATIKONE6": { "h": 2749, "v": 2199, "p": 4.54, "q": 0.66 },
         "ATIKONE9": { "h": 3380, "v": 2704, "p": 3.69, "q": 0.77 },
-        "ATIK16200": { "h": 4499, "v": 3599, "p": 6.0, "q": 0.6 },
-        "ATIK11000": { "h": 4007, "v": 2671, "p": 9.0, "q": 0.5 },
+        "AtikHorizonII": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
         "EOS40D": { "h": 3888, "v": 2592, "p": 5.7, "q": 0.33 },
         "EOS6D": { "h": 5472, "v": 3648, "p": 6.54, "q": 0.5 },
-        "SONYA7S": { "h": 4240, "v": 2832, "p": 8.4, "q": 0.65 }
+        "KAF8300": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.56 },
+        "SONYA7S": { "h": 4240, "v": 2832, "p": 8.4, "q": 0.65 },
+        "HAWAII-4RG": { "h": 4096, "v": 4096, "p": 15, "q": 0.70 },
+        "ACS": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.09 },
+        "WFC3": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.354 }
     }
 }
 """
@@ -86,6 +100,7 @@ def camera(name):
     v = None
     p = None
     q = None
+    r = 1
     name_in_uppercase = name.upper()
     scopes_and_cameras = json.loads(json_data)
     if name_in_uppercase not in scopes_and_cameras["cameras"]:
@@ -100,7 +115,9 @@ def camera(name):
         p = camera_dict['p']
     if 'q' in camera_dict:
         q = camera_dict['q']
-    return h, v, p, q
+    if 'r' in camera_dict:
+        r = camera_dict['r']
+    return h, v, p, q, r
 
 
 def main():
@@ -154,17 +171,20 @@ def main():
     if args.list:
         list_scopes_and_cameras()
         quit(0)
+    c1r = 1.0
+    c2r = 1.0
     if args.s1:
         args.d1, args.di1, args.l1, args.f1, args.o1 = scope(args.s1)
     if args.s2:
         args.d2, args.di2, args.l2, args.f2, args.o2 = scope(args.s2)
     if args.c1:
-        args.c1h, args.c1v, args.c1p, args.c1q = camera(args.c1)
+        args.c1h, args.c1v, args.c1p, args.c1q, c1r = camera(args.c1)
     if args.c2:
-        args.c2h, args.c2v, args.c2p, args.c2q = camera(args.c2)
+        args.c2h, args.c2v, args.c2p, args.c2q, c2r = camera(args.c2)
 
     t1_aperture_diameter = args.d1 if args.d1 else args.di1 * 25.4 if args.di1 else None
     t1_focal_reducer = args.r1 if args.r1 else 1
+    t1_focal_reducer *= c1r
     t1_obstruction_ratio = args.o1 if args.o1 else 0
     t1_transmittance_factor = args.t1 if args.t1 else 1
     if t1_aperture_diameter:
@@ -200,6 +220,7 @@ def main():
 
     t2_aperture_diameter = args.d2 if args.d2 else args.di2 * 25.4 if args.di2 else None
     t2_focal_reducer = args.r2 if args.r2 else 1
+    t2_focal_reducer *= c2r
     t2_obstruction_ratio = args.o2 if args.o2 else 0
     t2_transmittance_factor = args.t2 if args.t2 else 1
     if t2_aperture_diameter:
@@ -331,12 +352,12 @@ def main():
         print('OTA 1 aperture area {:.2f} [mm^2], collects {:.2f}x more photons'.format(
             t1_aperture_area, t1_t2_aperture_area))
         print(
-            'Camera 1 pixel size {:.2f} [μm], sensor size {:.0f}x{:.0f} [pixels*pixels], {:.1f}x{:.1f} [mm*mm], sensor area {:.2f} [mm^2] ={:.2f}x larger'.format(
+            'Camera 1 pixel size {:.3f} [μm], sensor size {:.0f}x{:.0f} [pixels*pixels], {:.1f}x{:.1f} [mm*mm], sensor area {:.2f} [mm^2] ={:.2f}x larger'.format(
                 c1_p, c1_h, c1_v, c1_h * c1_p / 1e3, c1_v * c1_p / 1e3, c1_a / 1e6, c1_c2_area))
         print('Camera 1 quantum efficiency factor {:.2f}'.format(c1_q))
         print(
-            'Telescope 1 resolution {:.2f} [arcsec/pixel], FOV {:.0f}x{:.0f} [arcmin*arcmin] ={:.2f}x larger, optical transmittance factor {:.2f}'.format(
-                t1_arcsec_p, t1_view_h / 60, t1_view_v / 60, t1_t2_view_factor, t1_transmittance_factor))
+            'Telescope 1 resolution {:.4f} [arcsec/pixel], FOV {:.3f}x{:.3f} [arcsec*arcsec]={:.2f}x{:.2f} [arcmin*arcmin] ={:.4f}x larger, optical transmittance factor {:.2f}'.format(
+                t1_arcsec_p, t1_view_h, t1_view_v, t1_view_h / 60, t1_view_v / 60, t1_t2_view_factor, t1_transmittance_factor))
         print('Telescope 1 extended object irradiance is {:.2f}x more'.format(t1_t2_extended_object_irradiance_factor))
         print('Telescope 1    point object irradiance is {:.2f}x more'.format(t1_t2_point_object_irradiance_factor))
         print('Telescope 1       etendue {:.2f} [m^2arcsec^2] ={:.2f}x more'.format(t1_etendue, t1_t2_etendue))
@@ -353,12 +374,12 @@ def main():
         print('OTA 2 aperture area {:.2f} [mm^2], collects {:.2f}x more photons'.format(
             t2_aperture_area, t2_t1_aperture_area))
         print(
-            'Camera 2 pixel size {:.2f} [μm], sensor size {:.0f}x{:.0f} [pixels*pixels], {:.1f}x{:.1f} [mm*mm], sensor area {:.2f} [mm^2] ={:.2f}x larger'.format(
+            'Camera 2 pixel size {:.3f} [μm], sensor size {:.0f}x{:.0f} [pixels*pixels], {:.1f}x{:.1f} [mm*mm], sensor area {:.2f} [mm^2] ={:.2f}x larger'.format(
                 c2_p, c2_h, c2_v, c2_h * c2_p / 1e3, c2_v * c2_p / 1e3, c2_a / 1e6, c2_c1_area))
         print('Camera 2 quantum efficiency factor {:.2f}'.format(c2_q))
         print(
-            'Telescope 2 resolution {:.2f} [arcsec/pixel], FOV {:.0f}x{:.0f} [arcmin*arcmin] ={:.2f}x larger, optical transmittance factor {:.2f}'.format(
-                t2_arcsec_p, t2_view_h / 60, t2_view_v / 60, t2_t1_view_factor, t2_transmittance_factor))
+            'Telescope 2 resolution {:.4f} [arcsec/pixel], FOV {:.3f}x{:.3f} [arcsec*arcsec]={:.2f}x{:.2f} [arcmin*arcmin] ={:.4f}x larger, optical transmittance factor {:.2f}'.format(
+                t2_arcsec_p, t2_view_h, t2_view_v, t2_view_h / 60, t2_view_v / 60, t2_t1_view_factor, t2_transmittance_factor))
         print('Telescope 2 extended object irradiance is {:.2f}x more'.format(t2_t1_extended_object_irradiance_factor))
         print('Telescope 2    point object irradiance is {:.2f}x more'.format(t2_t1_point_object_irradiance_factor))
         print('Telescope 2       etendue {:.2f} [m^2arcsec^2] ={:.2f}x more'.format(t2_etendue, t2_t1_etendue))
