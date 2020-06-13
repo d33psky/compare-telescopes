@@ -13,31 +13,48 @@ import argparse
 import math
 import textwrap
 import json
+import os.path
+import sys
 
-# 'ASI':  # https://compare.astronomy-imaging-camera.com/
-# 'ATIK': # https://www.atik-cameras.com/
-# 'EOS':  # https://astrophotography.app/EOS.php
-json_data = """
+default_json_data = """
 {
     "scopes": {
-        "APO130": { "d": 130, "l": 650 },
-        "CUSTOM1": { "d": 254, "l": 2970, "o": 0.37 },
-        "C9.25": { "di": 9.25, "f": 10, "o": 0.36 },
-        "C11": { "di": 11, "f": 10, "o": 0.34 }, 
-        "C14": { "di": 14, "f": 10, "o": 0.32 }, 
         "ED80": { "d": 80, "l": 600 },
-        "GSRC10": { "d": 254, "l": 2000 },
-        "HUBBLE": { "d": 2400, "l": 57600, "o": 0.127, "t": 0.85 },
-        "LX200-10": { "di": 10, "f": 10, "o": 0.37 }, 
-        "ONTC1010": { "d": 254, "l": 1000, "o": 0.31 }, 
-        "ONTC1212": { "d": 303, "l": 1200, "o": 0.29 }, 
+        "APO130": { "d": 130, "l": 650 },
         "SV102ED": { "d": 102, "l": 710 },
+        "BS10ED": { "di": 10, "l": 711, "o": 0.35 },
+        "BS12ED": { "di": 12, "l": 854, "o": 0.34 },
+        "C8": { "di": 8, "f": 10, "o": 0.39 },
+        "C9.25": { "di": 9.25, "f": 10, "o": 0.36 },
+        "C11": { "di": 11, "f": 10, "o": 0.34 },
+        "C14": { "di": 14, "f": 10, "o": 0.32 },
+        "AT10RC": { "di": 10, "l": 2000, "o": 0.43 },
+        "GSRC10": { "di": 10, "l": 2000, "o": 0.44 },
+        "GSRC12": { "di": 12, "l": 2432, "o": 0.49 },
+        "GSRC14": { "di": 14, "l": 2854, "o": 0.5 },
+        "LX200-8f10": { "di": 8, "f": 10, "o": 0.38 },
+        "LX200-10f10": { "di": 10, "f": 10, "o": 0.37 },
+        "LX200-14f10": { "di": 14, "f": 10, "o": 0.32 },
+        "ACF10f8": { "di": 10, "f": 8, "o": 0.47 },
+        "ACF12f8": { "di": 12, "f": 8, "o": 0.41 },
+        "ACF14f8": { "di": 14, "f": 8, "o": 0.36 },
+        "ONTC1010": { "d": 254, "l": 1000, "o": 0.31 },
+        "ONTC1212": { "d": 303, "l": 1200, "o": 0.29 },
+        "RASA8": { "di": 8, "l": 400, "o": 0.46 },
+        "RASA11": { "di": 11, "l": 620, "o": 0.50 },
+        "HUBBLE": { "d": 2400, "l": 57600, "o": 0.127, "t": 0.85 },
         "ELT": { "d": 39300, "l": 743400, "o": 0.104 },
-        "VLT": { "d": 8200,  "l": 120000, "o": 0.136 }
+        "VLT": { "d": 8200,  "l": 120000, "o": 0.136 },
+        "GTC": { "d": 10400,  "l": 169900, "o": 0.115 },
+        "KECK_p": { "d": 10000,  "l": 17500 },
+        "KECK_sf15": { "d": 10000,  "l": 149600, "o": 0.145 },
+        "KECK_sf25": { "d": 10000,  "l": 249700, "o": 0.050 },
+        "KECK_sf40": { "d": 10000,  "l": 395000, "o": 0.050 },
+        "TMT": { "d": 30000,  "l": 450000, "o": 0.103 }
     },
     "cameras": {
         "ASI120": { "h": 1280, "v": 960, "p": 3.75, "q": 0.80 },
-        "ASI6200": { "h": 9576, "v": 6388, "p": 3.76, "q": 0.80 },
+        "ASI6200": { "h": 9576, "v": 6388, "p": 3.76, "q": 0.91 },
         "ASI1600": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
         "ASI533": { "h": 3008, "v": 3008, "p": 3.76, "q": 0.80 },
         "ASI183": { "h": 5496, "v": 3672, "p": 2.40, "q": 0.84 },
@@ -50,6 +67,7 @@ json_data = """
         "EOS40D": { "h": 3888, "v": 2592, "p": 5.7, "q": 0.33 },
         "EOS6D": { "h": 5472, "v": 3648, "p": 6.54, "q": 0.5 },
         "KAF8300": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.56 },
+        "KAF16803": { "h": 4096, "v": 4096, "p": 9.0, "q": 0.6 },
         "SONYA7S": { "h": 4240, "v": 2832, "p": 8.4, "q": 0.65 },
         "HAWAII-4RG": { "h": 4096, "v": 4096, "p": 15, "q": 0.70 },
         "ACS": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.09 },
@@ -59,65 +77,74 @@ json_data = """
 """
 
 
-def list_scopes_and_cameras():
-    object_from_json = json.loads(json_data)
-    # print(json.dumps(scopes, indent=4, sort_keys=True))
-    for name in sorted(object_from_json['scopes'].items()) + sorted(object_from_json['cameras'].items()):
-        line = "{:15s}".format(name[0])
-        for key in name[1].keys():
-            value = name[1][key]
-            line += " --{:3s} {:<4}".format(key, value)
-        print("{}".format(line))
+class Gear():
+    def __init__(self, file=None):
+        print("file {}".format(file))
+        self.file_data = None
+        self.default_data = json.loads(default_json_data)
+        if os.path.isfile(file):
+            with open(file) as json_file:
+                self.file_data = json.load(json_file)
+        self.scopes = {x.lower(): y for x, y in {**self.file_data['scopes'], **self.default_data['scopes']}.items()}
+        self.cameras = {x.lower(): y for x, y in {**self.file_data['cameras'], **self.default_data['cameras']}.items()}
 
+    def list_scopes_and_cameras(self, as_json=None):
+        if as_json:
+            print('Default data:')
+            print(json.dumps(self.default_data, indent=4, sort_keys=True))
+            print('Custom data:')
+            print(json.dumps(self.file_data, indent=4, sort_keys=True))
+        else:
+            for name in sorted(self.scopes.items()) + sorted(self.cameras.items()):
+                line = "{:15s}".format(name[0])
+                for key in name[1].keys():
+                    value = name[1][key]
+                    line += " --{:2s} {:<6}".format(key, value)
+                print("{}".format(line))
 
-def scope(name):
-    d = None
-    di = None
-    l = None
-    f = None
-    o = None
-    name_in_uppercase = name.upper()
-    scopes_and_cameras = json.loads(json_data)
-    if name_in_uppercase not in scopes_and_cameras["scopes"]:
-        print('{} is an unknown scope'.format(name_in_uppercase))
-        quit(1)
-    scope_dict = scopes_and_cameras["scopes"][name_in_uppercase]
-    if 'd' in scope_dict:
-        d = scope_dict['d']
-    if 'di' in scope_dict:
-        di = scope_dict['di']
-    if 'l' in scope_dict:
-        l = scope_dict['l']
-    if 'f' in scope_dict:
-        f = scope_dict['f']
-    if 'o' in scope_dict:
-        o = scope_dict['o']
-    return d, di, l, f, o
+    def scope(self, name):
+        d = None
+        di = None
+        l = None
+        f = None
+        o = None
+        if name.lower() not in self.scopes:
+            print('{} is an unknown telescope'.format(name))
+            sys.exit(1)
+        scope_dict = self.scopes.get(name.lower())
+        if 'd' in scope_dict:
+            d = scope_dict['d']
+        if 'di' in scope_dict:
+            di = scope_dict['di']
+        if 'l' in scope_dict:
+            l = scope_dict['l']
+        if 'f' in scope_dict:
+            f = scope_dict['f']
+        if 'o' in scope_dict:
+            o = scope_dict['o']
+        return d, di, l, f, o
 
-
-def camera(name):
-    h = None
-    v = None
-    p = None
-    q = None
-    r = 1
-    name_in_uppercase = name.upper()
-    scopes_and_cameras = json.loads(json_data)
-    if name_in_uppercase not in scopes_and_cameras["cameras"]:
-        print('{} is an unknown camera'.format(name_in_uppercase))
-        quit(1)
-    camera_dict = scopes_and_cameras["cameras"][name_in_uppercase]
-    if 'h' in camera_dict:
-        h = camera_dict['h']
-    if 'v' in camera_dict:
-        v = camera_dict['v']
-    if 'p' in camera_dict:
-        p = camera_dict['p']
-    if 'q' in camera_dict:
-        q = camera_dict['q']
-    if 'r' in camera_dict:
-        r = camera_dict['r']
-    return h, v, p, q, r
+    def camera(self, name):
+        h = None
+        v = None
+        p = None
+        q = None
+        r = 1
+        if name.lower() not in self.cameras:
+            print('{} is an unknown camera'.format(name))
+            sys.exit(1)
+        camera_dict = self.cameras.get(name.lower())
+        if 'h' in camera_dict:
+            h = camera_dict['h']
+        if 'v' in camera_dict:
+            v = camera_dict['v']
+        if 'p' in camera_dict:
+            p = camera_dict['p']
+        if 'q' in camera_dict:
+            q = camera_dict['q']
+        if 'r' in camera_dict:
+            r = camera_dict['r']
+        return h, v, p, q, r
 
 
 def main():
@@ -131,6 +158,7 @@ def main():
     parser.add_argument("--legend", action="store_true", help="Legend")
     parser.add_argument("--formulas", action="store_true", help="Show the used formulas")
     parser.add_argument("--list", action="store_true", help="Print list of known telescopes and cameras")
+    parser.add_argument("--json", action="store_true", help="Print list of known telescopes and cameras as json")
 
     parser.add_argument("--s1", required=False, type=str, help="Scope 1")
     parser.add_argument("--d1", required=False, type=float, help="Telescope 1 aperture Diameter [mm]")
@@ -167,20 +195,23 @@ def main():
     args = parser.parse_args()
     if args.formulas:
         print_formulas()
-        quit(0)
-    if args.list:
-        list_scopes_and_cameras()
-        quit(0)
+        sys.exit(0)
+    if args.s1 or args.c1 or args.s2 or args.c2 or args.list or args.json:
+        path = os.path.dirname(os.path.realpath(sys.argv[0]))
+        gear = Gear(file="{}/telescopes-and-cameras.json".format(path))
+    if args.list or args.json:
+        gear.list_scopes_and_cameras(args.json)
+        sys.exit(0)
     c1r = 1.0
     c2r = 1.0
     if args.s1:
-        args.d1, args.di1, args.l1, args.f1, args.o1 = scope(args.s1)
+        args.d1, args.di1, args.l1, args.f1, args.o1 = gear.scope(args.s1)
     if args.s2:
-        args.d2, args.di2, args.l2, args.f2, args.o2 = scope(args.s2)
+        args.d2, args.di2, args.l2, args.f2, args.o2 = gear.scope(args.s2)
     if args.c1:
-        args.c1h, args.c1v, args.c1p, args.c1q, c1r = camera(args.c1)
+        args.c1h, args.c1v, args.c1p, args.c1q, c1r = gear.camera(args.c1)
     if args.c2:
-        args.c2h, args.c2v, args.c2p, args.c2q, c2r = camera(args.c2)
+        args.c2h, args.c2v, args.c2p, args.c2q, c2r = gear.camera(args.c2)
 
     t1_aperture_diameter = args.d1 if args.d1 else args.di1 * 25.4 if args.di1 else None
     t1_focal_reducer = args.r1 if args.r1 else 1
@@ -192,7 +223,7 @@ def main():
             t1_focal_length = args.l1 * t1_focal_reducer
             if args.f1:
                 print('Need ONLY 2 out of 3 of Telescope 1 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                sys.exit(1)
             t1_focal_ratio = t1_focal_length / t1_aperture_diameter
         else:
             if args.f1:
@@ -228,7 +259,7 @@ def main():
             t2_focal_length = args.l2 * t2_focal_reducer
             if args.f2:
                 print('Need ONLY 2 out of 3 of Telescope 2 aperture Diameter, Focal length, Focal ratio')
-                quit(1)
+                sys.exit(1)
             t2_focal_ratio = t2_focal_length / t2_aperture_diameter
         else:
             if args.f2:
@@ -250,7 +281,7 @@ def main():
             if args.f2:
                 t2_focal_ratio = args.f2 * t2_focal_reducer
             else:
-                t2_focal_ratio = t1_focal_ratio
+                t2_focal_ratio = t1_focal_ratio * t2_focal_reducer
             t2_focal_length = t2_aperture_diameter * t2_focal_ratio
             t2_obstruction_ratio = t1_obstruction_ratio
             t2_transmittance_factor = t1_transmittance_factor
@@ -357,7 +388,8 @@ def main():
         print('Camera 1 quantum efficiency factor {:.2f}'.format(c1_q))
         print(
             'Telescope 1 resolution {:.4f} [arcsec/pixel], FOV {:.3f}x{:.3f} [arcsec*arcsec]={:.2f}x{:.2f} [arcmin*arcmin] ={:.4f}x larger, optical transmittance factor {:.2f}'.format(
-                t1_arcsec_p, t1_view_h, t1_view_v, t1_view_h / 60, t1_view_v / 60, t1_t2_view_factor, t1_transmittance_factor))
+                t1_arcsec_p, t1_view_h, t1_view_v, t1_view_h / 60, t1_view_v / 60, t1_t2_view_factor,
+                t1_transmittance_factor))
         print('Telescope 1 extended object irradiance is {:.2f}x more'.format(t1_t2_extended_object_irradiance_factor))
         print('Telescope 1    point object irradiance is {:.2f}x more'.format(t1_t2_point_object_irradiance_factor))
         print('Telescope 1       etendue {:.2f} [m^2arcsec^2] ={:.2f}x more'.format(t1_etendue, t1_t2_etendue))
@@ -379,7 +411,8 @@ def main():
         print('Camera 2 quantum efficiency factor {:.2f}'.format(c2_q))
         print(
             'Telescope 2 resolution {:.4f} [arcsec/pixel], FOV {:.3f}x{:.3f} [arcsec*arcsec]={:.2f}x{:.2f} [arcmin*arcmin] ={:.4f}x larger, optical transmittance factor {:.2f}'.format(
-                t2_arcsec_p, t2_view_h, t2_view_v, t2_view_h / 60, t2_view_v / 60, t2_t1_view_factor, t2_transmittance_factor))
+                t2_arcsec_p, t2_view_h, t2_view_v, t2_view_h / 60, t2_view_v / 60, t2_t1_view_factor,
+                t2_transmittance_factor))
         print('Telescope 2 extended object irradiance is {:.2f}x more'.format(t2_t1_extended_object_irradiance_factor))
         print('Telescope 2    point object irradiance is {:.2f}x more'.format(t2_t1_point_object_irradiance_factor))
         print('Telescope 2       etendue {:.2f} [m^2arcsec^2] ={:.2f}x more'.format(t2_etendue, t2_t1_etendue))
