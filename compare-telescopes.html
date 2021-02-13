@@ -24,7 +24,7 @@ Compare the imaging performance of 2 telescopes for astrophotography.
 <br>
 Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 <br/>
-Version 1.3
+Version 1.4
 <br/>
 Source code at <a href="https://github.com/d33psky/compare-telescopes/">https://github.com/d33psky/compare-telescopes/</a>
 <br>
@@ -266,6 +266,7 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
 <div>
     <h2>History</h2>
     <ul>
+        <li>Version 1.4 use url query string and generate one for sharing just like the python arguments</li>
         <li>Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps</li>
         <li>Version 1.2 add defaults for aperture diameter, focal length, focal ratio</li>
         <li>Version 1.1 pixelEtendue renamed to pet, added Etendue (of the whole system), added camera binning</li>
@@ -276,6 +277,34 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
 <script type="text/javascript">
 var ct1 = document.CT1;
 var example = 0;
+
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+if (urlParams.has('d1'))  { ct1.d1.value  = urlParams.get('d1');  }
+if (urlParams.has('di1')) { ct1.di1.value = urlParams.get('di1'); }
+if (urlParams.has('d2'))  { ct1.d2.value  = urlParams.get('d2');  }
+if (urlParams.has('di2')) { ct1.di2.value = urlParams.get('di2'); }
+if (urlParams.has('l1'))  { ct1.l1.value  = urlParams.get('l1');  }
+if (urlParams.has('l2'))  { ct1.l2.value  = urlParams.get('l2');  }
+if (urlParams.has('f1'))  { ct1.f1.value  = urlParams.get('f1');  }
+if (urlParams.has('f2'))  { ct1.f2.value  = urlParams.get('f2');  }
+if (urlParams.has('r1'))  { ct1.r1.value  = urlParams.get('r1');  }
+if (urlParams.has('r2'))  { ct1.r2.value  = urlParams.get('r2');  }
+if (urlParams.has('o1'))  { ct1.o1.value  = urlParams.get('o1');  }
+if (urlParams.has('o2'))  { ct1.o2.value  = urlParams.get('o2');  }
+if (urlParams.has('t1'))  { ct1.t1.value  = urlParams.get('t1');  }
+if (urlParams.has('t2'))  { ct1.t2.value  = urlParams.get('t2');  }
+if (urlParams.has('c1h')) { ct1.c1h.value = urlParams.get('c1h'); }
+if (urlParams.has('c2h')) { ct1.c2h.value = urlParams.get('c2h'); }
+if (urlParams.has('c1v')) { ct1.c1v.value = urlParams.get('c1v'); }
+if (urlParams.has('c2v')) { ct1.c2v.value = urlParams.get('c2v'); }
+if (urlParams.has('c1p')) { ct1.c1p.value = urlParams.get('c1p'); }
+if (urlParams.has('c2p')) { ct1.c2p.value = urlParams.get('c2p'); }
+if (urlParams.has('c1q')) { ct1.c1q.value = urlParams.get('c1q'); }
+if (urlParams.has('c2q')) { ct1.c2q.value = urlParams.get('c2q'); }
+if (urlParams.has('c1b')) { ct1.c1b.value = urlParams.get('c1b'); }
+if (urlParams.has('c2b')) { ct1.c2b.value = urlParams.get('c2b'); }
+CT1_OnClick();
 
 function CT1_Reset() {
     // ota
@@ -569,7 +598,34 @@ function CT1_OnClick() {
     python_args += (ct1.c2q.value>0) ? " --c2q " +ct1.c2q.value : '';
     python_args += (ct1.c2b.value>0) ? " --c2b " +ct1.c2b.value : '';
 
-    var comparison = '# compare-telescopes.py' + python_args + '\n\n';
+    var url_args = window.location.protocol + "//" + window.location.host + window.location.pathname + "?a";
+    url_args += (ct1.d1.value>0)  ? "&d1=" +ct1.d1.value : '';
+    url_args += (ct1.di1.value>0) ? "&di1=" +ct1.di1.value : '';
+    url_args += (ct1.o1.value>0)  ? "&o1=" +ct1.o1.value : '';
+    url_args += (ct1.l1.value>0)  ? "&l1=" +ct1.l1.value : '';
+    url_args += (ct1.f1.value>0)  ? "&f1=" +ct1.f1.value : '';
+    url_args += (ct1.r1.value>0)  ? "&r1=" +ct1.r1.value : '';
+    url_args += (ct1.t1.value>0)  ? "&t1=" +ct1.t1.value : '';
+    url_args += (ct1.c1h.value>0) ? "&c1h=" +ct1.c1h.value : '';
+    url_args += (ct1.c1v.value>0) ? "&c1v=" +ct1.c1v.value : '';
+    url_args += (ct1.c1p.value>0) ? "&c1p=" +ct1.c1p.value : '';
+    url_args += (ct1.c1q.value>0) ? "&c1q=" +ct1.c1q.value : '';
+    url_args += (ct1.c1b.value>0) ? "&c1b=" +ct1.c1b.value : '';
+    url_args += (ct1.d2.value>0)  ? "&d2=" +ct1.d2.value : '';
+    url_args += (ct1.di2.value>0) ? "&di2=" +ct1.di2.value : '';
+    url_args += (ct1.o2.value>0)  ? "&o2=" +ct1.o2.value : '';
+    url_args += (ct1.l2.value>0)  ? "&l2=" +ct1.l2.value : '';
+    url_args += (ct1.f2.value>0)  ? "&f2=" +ct1.f2.value : '';
+    url_args += (ct1.r2.value>0)  ? "&r2=" +ct1.r2.value : '';
+    url_args += (ct1.t2.value>0)  ? "&t2=" +ct1.t2.value : '';
+    url_args += (ct1.c2h.value>0) ? "&c2h=" +ct1.c2h.value : '';
+    url_args += (ct1.c2v.value>0) ? "&c2v=" +ct1.c2v.value : '';
+    url_args += (ct1.c2p.value>0) ? "&c2p=" +ct1.c2p.value : '';
+    url_args += (ct1.c2q.value>0) ? "&c2q=" +ct1.c2q.value : '';
+    url_args += (ct1.c2b.value>0) ? "&c2b=" +ct1.c2b.value : '';
+
+    var comparison = '# compare-telescopes.py' + python_args + '\n';
+    comparison += "# " + url_args + '\n\n';
     comparison += "# Telescope 1" + tel1 + '\n';
     comparison += "# Telescope 2" + tel2;
     document.getElementById("comparison").innerHTML = comparison;
