@@ -3,6 +3,7 @@
 Compare the imaging performance of 2 telescopes for astrophotography.
 Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 
+Version 1.4 add a known list of telescopes and cameras, -s and -c
 Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps
 Version 1.2 add defaults for aperture diameter, focal length, focal ratio
 Version 1.1 pixelEtendue renamed to pet, added Etendue (of the whole system), added camera binning
@@ -12,6 +13,161 @@ Source code at https://github.com/d33psky/compare-telescopes/
 import argparse
 import math
 import textwrap
+import json
+import os.path
+import sys
+
+default_json_data = """
+{
+    "scopes": {
+        "ED80": { "d": 80, "l": 600 },
+        "ESPRIT100": { "d": 100, "f": 5.5 },
+        "APO130": { "d": 130, "l": 650 },
+        "SV102ED": { "d": 102, "l": 710 },
+        "TOA150B": { "d": 150, "l": 1100 },
+        "TEC140": { "d": 140, "l": 980 },
+        "BS10ED": { "di": 10, "l": 711, "o": 0.35 },
+        "BS12ED": { "di": 12, "l": 854, "o": 0.34 },
+        "CDK12.5": { "d": 318, "l": 2541, "o": 0.37 },
+        "C8": { "di": 8, "f": 10, "o": 0.39 },
+        "C9.25": { "di": 9.25, "f": 10, "o": 0.36 },
+        "C11": { "di": 11, "f": 10, "o": 0.34 },
+        "C14": { "di": 14, "f": 10, "o": 0.32 },
+        "AT6RC": { "di": 6, "l": 1370, "o": 0.50 },
+        "AT10RC": { "di": 10, "l": 2000, "o": 0.43 },
+        "TSRC8": { "d": 203, "l": 1624, "o": 0.42 },
+        "GSRC10": { "d": 254, "l": 2000, "o": 0.44 },
+        "GSRC12": { "d": 304, "l": 2432, "o": 0.49 },
+        "GSRC14": { "di": 14, "l": 2854, "o": 0.5 },
+        "LX200-8f10": { "di": 8, "f": 10, "o": 0.38 },
+        "LX200-10f10": { "di": 10, "f": 10, "o": 0.37 },
+        "LX200-14f10": { "di": 14, "f": 10, "o": 0.32 },
+        "ACF10f8": { "di": 10, "f": 8, "o": 0.47 },
+        "ACF12f8": { "di": 12, "f": 8, "o": 0.41 },
+        "ACF14f8": { "di": 14, "f": 8, "o": 0.36 },
+        "SWE250PDS": { "d": 250, "l": 1200, "o": 0.25 },
+        "ONTC808": { "d": 203, "l": 800, "o": 0.36 },
+        "ONTC1010": { "d": 254, "l": 1000, "o": 0.31 },
+        "ONTC1212": { "d": 303, "l": 1200, "o": 0.29 },
+        "RH200": { "d": 200, "l": 600, "o": 0.55 },
+        "RASA8": { "di": 8, "l": 400, "o": 0.46 },
+        "RASA11": { "di": 11, "l": 620, "o": 0.50 },
+        "HUBBLE": { "d": 2400, "l": 57600, "o": 0.127, "t": 0.85 },
+        "ELT": { "d": 39300, "l": 743400, "o": 0.104 },
+        "VLT": { "d": 8200,  "l": 120000, "o": 0.136 },
+        "GTC": { "d": 10400,  "l": 169900, "o": 0.115 },
+        "KECK_p": { "d": 10000,  "l": 17500 },
+        "KECK_sf15": { "d": 10000,  "l": 149600, "o": 0.145 },
+        "KECK_sf25": { "d": 10000,  "l": 249700, "o": 0.050 },
+        "KECK_sf40": { "d": 10000,  "l": 395000, "o": 0.050 },
+        "TMT": { "d": 30000,  "l": 450000, "o": 0.103 }
+    },
+    "cameras": {
+        "ASI071": { "h": 4944, "v": 3284, "p": 4.79, "q": 0.50 },
+        "ASI120": { "h": 1280, "v": 960, "p": 3.75, "q": 0.80 },
+        "ASI2600": { "h": 6248, "v": 4176, "p": 3.76, "q": 0.8 },
+        "ASI6200": { "h": 9576, "v": 6388, "p": 3.76, "q": 0.91 },
+        "ASI1600": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
+        "ASI294": { "h": 4144, "v": 2822, "p": 4.63, "q": 0.75 },
+        "ASI385": { "h": 1936, "v": 1096, "p": 3.75, "q": 0.80 },
+        "ASI533": { "h": 3008, "v": 3008, "p": 3.76, "q": 0.80 },
+        "ASI183": { "h": 5496, "v": 3672, "p": 2.40, "q": 0.84 },
+        "ATIK11000": { "h": 4007, "v": 2671, "p": 9.0, "q": 0.5 },
+        "ATIK4000": { "h": 2047, "v": 2047, "p": 7.4, "q": 0.55 },
+        "KAI11002": { "h": 4008, "v": 2672, "p": 9.0, "q": 0.5 },
+        "ATIK16200": { "h": 4499, "v": 3599, "p": 6.0, "q": 0.6 },
+        "ATIK383": { "h": 3354, "v": 2529, "p": 5.4, "q": 0.56 },
+        "ATIKONE6": { "h": 2749, "v": 2199, "p": 4.54, "q": 0.66 },
+        "ATIKONE9": { "h": 3380, "v": 2704, "p": 3.69, "q": 0.77 },
+        "AtikHorizonII": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
+        "EOS40D": { "h": 3888, "v": 2592, "p": 5.7, "q": 0.33 },
+        "EOS70D": { "h": 5472, "v": 3648, "p": 4.1, "q": 0.48 },
+        "EOS6D": { "h": 5472, "v": 3648, "p": 6.54, "q": 0.5 },
+        "D5300": { "h": 6000, "v": 4000, "p": 3.92, "q": 0.55 },
+        "D5600": { "h": 6000, "v": 4000, "p": 3.92, "q": 0.52 },
+        "KAF3200ME": { "h": 2184, "v": 1472, "p": 6.8, "q": 0.85 },
+        "KAF8300": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.56 },
+        "QSI683": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.57 },
+        "KAF16803": { "h": 4096, "v": 4096, "p": 9.0, "q": 0.6 },
+        "QHY183": { "h": 5544, "v": 3694, "p": 2.4, "q": 0.84 },
+        "QHY23": { "h": 3468, "v": 2728, "p": 3.69, "q": 0.8 },
+        "SONYA7S": { "h": 4240, "v": 2832, "p": 8.4, "q": 0.65 },
+        "HAWAII-4RG": { "h": 4096, "v": 4096, "p": 15, "q": 0.70 },
+        "ACS": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.09 },
+        "WFC3": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.354 }
+    }
+}
+"""
+
+
+class Gear():
+    def __init__(self, file=None):
+        print("file {}".format(file))
+        self.file_data = None
+        self.default_data = json.loads(default_json_data)
+        if os.path.isfile(file):
+            with open(file) as json_file:
+                self.file_data = json.load(json_file)
+        self.scopes = {x.lower(): y for x, y in {**self.file_data['scopes'], **self.default_data['scopes']}.items()}
+        self.cameras = {x.lower(): y for x, y in {**self.file_data['cameras'], **self.default_data['cameras']}.items()}
+
+    def list_scopes_and_cameras(self, as_json=None):
+        if as_json:
+            print('Default data:')
+            print(json.dumps(self.default_data, indent=4, sort_keys=True))
+            print('Custom data:')
+            print(json.dumps(self.file_data, indent=4, sort_keys=True))
+        else:
+            for name in sorted(self.scopes.items()) + sorted(self.cameras.items()):
+                line = "{:15s}".format(name[0])
+                for key in name[1].keys():
+                    value = name[1][key]
+                    line += " --{:2s} {:<6}".format(key, value)
+                print("{}".format(line))
+
+    def scope(self, name):
+        d = None
+        di = None
+        l = None
+        f = None
+        o = None
+        if name.lower() not in self.scopes:
+            print('{} is an unknown telescope'.format(name))
+            sys.exit(1)
+        scope_dict = self.scopes.get(name.lower())
+        if 'd' in scope_dict:
+            d = scope_dict['d']
+        if 'di' in scope_dict:
+            di = scope_dict['di']
+        if 'l' in scope_dict:
+            l = scope_dict['l']
+        if 'f' in scope_dict:
+            f = scope_dict['f']
+        if 'o' in scope_dict:
+            o = scope_dict['o']
+        return d, di, l, f, o
+
+    def camera(self, name):
+        h = None
+        v = None
+        p = None
+        q = None
+        r = 1
+        if name.lower() not in self.cameras:
+            print('{} is an unknown camera'.format(name))
+            sys.exit(1)
+        camera_dict = self.cameras.get(name.lower())
+        if 'h' in camera_dict:
+            h = camera_dict['h']
+        if 'v' in camera_dict:
+            v = camera_dict['v']
+        if 'p' in camera_dict:
+            p = camera_dict['p']
+        if 'q' in camera_dict:
+            q = camera_dict['q']
+        if 'r' in camera_dict:
+            r = camera_dict['r']
+        return h, v, p, q, r
 
 
 def main():
