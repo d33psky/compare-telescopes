@@ -22,7 +22,15 @@
 <h1>Compare Telescopes</h1>
 Compare the imaging performance of 2 telescopes for astrophotography.
 <br>
-Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
+Performance indicators are:
+<a href="#res">pixel scale</a> (res),
+<a href="#fov">field of view</a> (FOV),
+<a href="#eoi">extended object irradiance</a> (eoi),
+<a href="#poi">point object irradiance</a> (poi),
+<a href="#e">etendue</a> (e),
+<a href="#pe">pixel etendue</a> (pe),
+<a href="#ps">pixel signal</a> (ps) and
+<a href="#os">object signal</a> (os).
 <br/>
 Version 1.4
 <br/>
@@ -203,6 +211,7 @@ This is the <a href="https://lambermont.dyndns.org/astro/code/compare-telescopes
 <div>
     <h2>Performance indicators</h2>
 
+    <a name="res"></a>
     <h3>Pixel Scale, or pixel resolution.</h3>
     <p>Pixel Scale, or pixel resolution, is the solid angle that is projected on a single pixel.
     It is measured in arcseconds per pixel, <code>["/pixel]</code>.</p>
@@ -212,6 +221,7 @@ This is the <a href="https://lambermont.dyndns.org/astro/code/compare-telescopes
     <p>With 206.265 the amount of arcseconds per radian / 1000 .
     And <code>arcseconds per radian = (360 / (2 * pi)) * 60 * 60 = 206264.80624709635515795...</code></p>
 
+    <a name="fov"></a>
     <h3>FOV</h3>
     <p>FOV, Field Of View, is the solid angle that is projected on the camera sensor.</p>
     <p>Formula:</p>
@@ -220,6 +230,7 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
     </code></pre>
     <p>FOV is displayed in arcminutes <code>[']=["/60]</code>.</p>
 
+    <a name="eoi"></a>
     <h3>Extended Object Irradiance</h3>
     <p>Extended Object Irradiance is the radiant flux (power) received by the sensor per unit area of an extended object.
     Extended Object Irradiance is measured in <code>[W/m^2]</code>.
@@ -231,6 +242,7 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
     </code></pre>
     <p>The Extended Object Irradiance is also known as the Speed of a film camera where an f/4 is twice as fast as an f/5.6, meaning you need only half the time.</p>
 
+    <a name="poi"></a>
     <h3>Point Object Irradiance</h3>
     <p>Point Object Irradiance is the radiant flux (power) received by the sensor per unit area of a point object.
     For point objects such as stars the image irradiance varies as the aperture area ratio and the inverse square of the focal ratio.
@@ -239,24 +251,28 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
     <pre><code>Point_Object_Irradiance_ratio = (ota 1 aperture area/ota 2 aperture area) * 1 / (focal ratio of ota 1/focal ratio of ota 2)^2
     </code></pre>
 
+    <a name="e"></a>
     <h3>Etendue</h3>
     <p>Etendue is a measure of the flux gathering capability of the optical system onto the sensor. It is a purely geometric quantity.
     <p>Formula:</p>
     <pre><code>etendue = aperture_area [m^2] * FOV ["^2]
     </code></pre>
 
+    <a name="pe"></a>
     <h3>Pixel Etendue</h3>
     <p>Pixel Etendue is the etendue for a single pixel. It represents the light-gathering power of a single pixel.</p>
     <p>Formula:</p>
     <pre><code>pixel_etendue = aperture_area [mm^2] * pixel_scale^2 ["^2]
     </code></pre>
 
+    <a name="ps"></a>
     <h3>Pixel Signal</h3>
     <p>Pixel Signal is the Pixel Etendue corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.</p>
     <p>Formula:</p>
     <pre><code>pixel_signal = pixel_etendue * QE-factor * Transmittance-factor
     </code></pre>
 
+    <a name="os"></a>
     <h3>Object Signal</h3>
     <p>Object Signal is based on the Etendue of an extended object that fits in the FOV of both scopes, corrected for the sensor Quantum Efficiency and total optical system Transmittance losses.</p>
     <pre><code>Formula: object_signal = aperture_area [m^2] * QE-factor * Transmittance_factor
@@ -264,6 +280,7 @@ angle_y ["] = camera_pixels_y [pixels] * pixel scale ["/pixel]
 </div>
 
 <div>
+    <a name="history"></a>
     <h2>History</h2>
     <ul>
         <li>Version 1.4 use url query string and generate one for sharing just like the python arguments</li>
