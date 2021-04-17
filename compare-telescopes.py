@@ -29,6 +29,11 @@ default_json_data = """
         "BS10ED": { "di": 10, "l": 711, "o": 0.35 },
         "BS12ED": { "di": 12, "l": 854, "o": 0.34 },
         "CDK12.5": { "d": 318, "l": 2541, "o": 0.37 },
+        "CDK14": { "d": 356, "l": 2563, "o": 0.24 },
+        "CDK17": { "d": 432, "l": 2939, "o": 0.24 },
+        "CDK20f7.77": { "d": 508, "l": 3951, "o": 0.15 },
+        "CDK20f6.8": { "d": 508, "l": 3454, "o": 0.15 },
+        "CDK24": { "d": 610, "l": 3974, "o": 0.22 },
         "C8": { "di": 8, "f": 10, "o": 0.39 },
         "C9.25": { "di": 9.25, "f": 10, "o": 0.36 },
         "C11": { "di": 11, "f": 10, "o": 0.34 },
@@ -46,10 +51,12 @@ default_json_data = """
         "ACF12f8": { "di": 12, "f": 8, "o": 0.41 },
         "ACF14f8": { "di": 14, "f": 8, "o": 0.36 },
         "SWE250PDS": { "d": 250, "l": 1200, "o": 0.25 },
+        "MEWLON180": { "d": 180, "l": 2160, "o": 0.3 },
         "ONTC808": { "d": 203, "l": 800, "o": 0.36 },
         "ONTC1010": { "d": 254, "l": 1000, "o": 0.31 },
         "ONTC1212": { "d": 303, "l": 1200, "o": 0.29 },
         "RH200": { "d": 200, "l": 600, "o": 0.55 },
+        "RH305": { "d": 305, "l": 1159, "o": 0.24 },
         "RASA8": { "di": 8, "l": 400, "o": 0.46 },
         "RASA11": { "di": 11, "l": 620, "o": 0.50 },
         "HUBBLE": { "d": 2400, "l": 57600, "o": 0.127, "t": 0.85 },
@@ -89,8 +96,11 @@ default_json_data = """
         "KAF8300": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.56 },
         "QSI683": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.57 },
         "KAF16803": { "h": 4096, "v": 4096, "p": 9.0, "q": 0.6 },
+        "QHY163": { "h": 4656, "v": 3522, "p": 3.8, "q": 0.6 },
         "QHY183": { "h": 5544, "v": 3694, "p": 2.4, "q": 0.84 },
         "QHY23": { "h": 3468, "v": 2728, "p": 3.69, "q": 0.8 },
+        "ST10XME": { "h": 2184, "v": 1472, "p": 6.8, "q": 0.5 },
+        "SX694": { "h": 2750, "v": 2200, "p": 4.54, "q": 0.77 },
         "SONYA7S": { "h": 4240, "v": 2832, "p": 8.4, "q": 0.65 },
         "HAWAII-4RG": { "h": 4096, "v": 4096, "p": 15, "q": 0.70 },
         "ACS": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.09 },
@@ -329,6 +339,33 @@ def main():
     c2_v = args.c2v if args.c2v else c1_v
     c2_p = args.c2p if args.c2p else c1_p
     c2_b = args.c2b if args.c2b else 1
+
+    url_args = 'https://lambermont.dyndns.org/astro/code/compare-telescopes.html?a'
+    url_args += '&d1={}'.format(args.d1) if args.d1 else ''
+    url_args += "&di1={}".format(args.di1) if args.di1 else ''
+    url_args += "&o1={}".format(args.o1) if args.o1 else ''
+    url_args += "&l1={}".format(args.l1) if args.l1 else ''
+    url_args += "&f1={}".format(args.f1) if args.f1 else ''
+    url_args += "&r1={}".format(args.r1) if args.r1 else ''
+    url_args += "&t1={}".format(args.t1) if args.t1 else ''
+    url_args += "&c1h={}".format(args.c1h) if args.c1h else ''
+    url_args += "&c1v={}".format(args.c1v) if args.c1v else ''
+    url_args += "&c1p={}".format(args.c1p) if args.c1p else ''
+    url_args += "&c1q={}".format(args.c1q) if args.c1q else ''
+    url_args += "&c1b={}".format(args.c1b) if args.c1b else ''
+    url_args += "&d2={}".format(args.d2) if args.d2 else ''
+    url_args += "&di2={}".format(args.di2) if args.di2 else ''
+    url_args += "&o2={}".format(args.o2) if args.o2 else ''
+    url_args += "&l2={}".format(args.l2) if args.l2 else ''
+    url_args += "&f2={}".format(args.f2) if args.f2 else ''
+    url_args += "&r2={}".format(args.r2) if args.r2 else ''
+    url_args += "&t2={}".format(args.t2) if args.t2 else ''
+    url_args += "&c2h={}".format(args.c2h) if args.c2h else ''
+    url_args += "&c2v={}".format(args.c2v) if args.c2v else ''
+    url_args += "&c2p={}".format(args.c2p) if args.c2p else ''
+    url_args += "&c2q={}".format(args.c2q) if args.c2q else ''
+    url_args += "&c2b={}".format(args.c2b) if args.c2b else ''
+    print(url_args + '\n')
 
     c1_h /= c1_b
     c1_v /= c1_b
