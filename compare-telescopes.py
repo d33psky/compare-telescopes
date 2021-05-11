@@ -23,8 +23,10 @@ default_json_data = """
         "ED80": { "d": 80, "l": 600 },
         "ESPRIT100": { "d": 100, "f": 5.5 },
         "APO130": { "d": 130, "l": 650 },
+        "TS-photoline-130": { "d": 130, "l": 910 },
         "SV102ED": { "d": 102, "l": 710 },
         "TOA150B": { "d": 150, "l": 1100 },
+        "APMLZOS152": { "d": 152, "l": 1200 },
         "TEC140": { "d": 140, "l": 980 },
         "BS10ED": { "di": 10, "l": 711, "o": 0.35 },
         "BS12ED": { "di": 12, "l": 854, "o": 0.34 },
@@ -33,6 +35,8 @@ default_json_data = """
         "AGOiDK14.5": { "d": 368, "l": 2464, "o": 0.52 },
         "AGOiDK17": { "d": 432, "l": 2884, "o": 0.49 },
         "AGOiDK20": { "d": 508, "l": 3403, "o": 0.48 },
+        "dream16_3.75": { "di": 16, "f": 3.75, "o": 0.375 },
+        "MN-152": { "manufacturer": "Explore Scientific", "alias1": "MN6", "type": "Maksutov-Newton", "d": 152, "f": 5, "o": 0.32 },
         "CDK12.5": { "d": 318, "l": 2541, "o": 0.37 },
         "CDK14": { "d": 356, "l": 2563, "o": 0.24 },
         "CDK17": { "d": 432, "l": 2939, "o": 0.24 },
@@ -77,8 +81,9 @@ default_json_data = """
     "cameras": {
         "ASI071": { "h": 4944, "v": 3284, "p": 4.79, "q": 0.50 },
         "ASI120": { "h": 1280, "v": 960, "p": 3.75, "q": 0.80 },
+        "ASI2400MC": { "m": "ZWO", "s": "IMX410", "sm": "Sony", "h": 6072, "v": 4042, "p": 5.94, "q": 0.8 },
         "ASI2600": { "h": 6248, "v": 4176, "p": 3.76, "q": 0.8 },
-        "ASI6200": { "h": 9576, "v": 6388, "p": 3.76, "q": 0.91 },
+        "ASI6200": { "m": "ZWO", "s": "IMX455", "sm": "Sony", "h": 9576, "v": 6388, "p": 3.76, "q": 0.91 },
         "ASI1600": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
         "ASI294": { "h": 4144, "v": 2822, "p": 4.63, "q": 0.75 },
         "ASI385": { "h": 1936, "v": 1096, "p": 3.75, "q": 0.80 },
@@ -97,14 +102,16 @@ default_json_data = """
         "EOS6D": { "h": 5472, "v": 3648, "p": 6.54, "q": 0.5 },
         "D5300": { "h": 6000, "v": 4000, "p": 3.92, "q": 0.55 },
         "D5600": { "h": 6000, "v": 4000, "p": 3.92, "q": 0.52 },
+        "D610": { "m": "Nikon", "h": 6016, "v": 4016, "p":  5.95, "q": 0.49 },
         "KAF3200ME": { "h": 2184, "v": 1472, "p": 6.8, "q": 0.85 },
         "KAF8300": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.56 },
         "QSI683": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.57 },
+        "QSI6120": { "m": "QSI", "s": "ICX834", "sm": "Sony", "h": 4250, "v": 2838, "p": 3.1, "q": 0.77 },
         "KAF16803": { "h": 4096, "v": 4096, "p": 9.0, "q": 0.6 },
         "QHY163": { "h": 4656, "v": 3522, "p": 3.8, "q": 0.6 },
         "QHY183": { "h": 5544, "v": 3694, "p": 2.4, "q": 0.84 },
         "QHY23": { "h": 3468, "v": 2728, "p": 3.69, "q": 0.8 },
-        "ST10XME": { "h": 2184, "v": 1472, "p": 6.8, "q": 0.5 },
+        "ST10XME": { "m": "SBIG", "h": 2184, "v": 1472, "p": 6.8, "q": 0.5 },
         "SX694": { "h": 2750, "v": 2200, "p": 4.54, "q": 0.77 },
         "SONYA7S": { "h": 4240, "v": 2832, "p": 8.4, "q": 0.65 },
         "HAWAII-4RG": { "h": 4096, "v": 4096, "p": 15, "q": 0.70 },
@@ -319,7 +326,10 @@ def main():
             if args.f2:
                 t2_focal_ratio = args.f2 * t2_focal_reducer
             else:
-                t2_focal_ratio = t1_focal_ratio * t2_focal_reducer
+                if args.r2:
+                    t2_focal_ratio = (t1_focal_ratio/t1_focal_reducer) * t2_focal_reducer
+                else:
+                    t2_focal_ratio = t1_focal_ratio
             t2_focal_length = t2_aperture_diameter * t2_focal_ratio
             t2_obstruction_ratio = t1_obstruction_ratio
             t2_transmittance_factor = t1_transmittance_factor

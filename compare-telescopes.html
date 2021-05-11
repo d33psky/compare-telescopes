@@ -486,7 +486,11 @@ function CT1_OnClick() {
             if (ct1.f2.value>0) {
                 t2_focal_ratio = ct1.f2.value * t2_focal_reducer;
             } else {
-                t2_focal_ratio = t1_focal_ratio;
+                if (ct1.r2.value>0) {
+                    t2_focal_ratio = (t1_focal_ratio/t1_focal_reducer) * t2_focal_reducer;
+                } else {
+                    t2_focal_ratio = t1_focal_ratio;
+                }
             }
             t2_focal_length = t2_aperture_diameter * t2_focal_ratio;
             t2_obstruction_ratio = t1_obstruction_ratio;
