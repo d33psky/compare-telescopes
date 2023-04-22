@@ -3,6 +3,7 @@
 Compare the imaging performance of 2 telescopes for astrophotography.
 Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 
+Version 1.4 add a known list of telescopes and cameras, -s and -c
 Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps
 Version 1.2 add defaults for aperture diameter, focal length, focal ratio
 Version 1.1 pixelEtendue renamed to pet, added Etendue (of the whole system), added camera binning
@@ -20,17 +21,39 @@ default_json_data = """
 {
     "scopes": {
         "ED80": { "d": 80, "l": 600 },
+        "ESPRIT100": { "d": 100, "f": 5.5 },
+        "ESPRIT150": { "d": 150, "f": 7 },
         "APO130": { "d": 130, "l": 650 },
+        "TS-photoline-130": { "d": 130, "l": 910 },
         "SV102ED": { "d": 102, "l": 710 },
+        "TOA150B": { "d": 150, "l": 1100 },
+        "APMLZOS152": { "d": 152, "l": 1200 },
+        "TEC140": { "d": 140, "l": 980 },
+        "epsilon-180ED": { "d": 180, "f": 2.8 },
         "BS10ED": { "di": 10, "l": 711, "o": 0.35 },
         "BS12ED": { "di": 12, "l": 854, "o": 0.34 },
+        "AGOiDK10": { "d": 254, "l": 1674, "o": 0.56 },
+        "AGOiDK12.5": { "d": 318, "l": 2128, "o": 0.54 },
+        "AGOiDK14.5": { "d": 368, "l": 2464, "o": 0.52 },
+        "AGOiDK17": { "d": 432, "l": 2884, "o": 0.49 },
+        "AGOiDK20": { "d": 508, "l": 3403, "o": 0.48 },
+        "dream16_3.75": { "di": 16, "f": 3.75, "o": 0.375 },
+        "MN-152": { "manufacturer": "Explore Scientific", "alias1": "MN6", "type": "Maksutov-Newton", "d": 152, "f": 5, "o": 0.32 },
+        "CDK12.5": { "d": 318, "l": 2541, "o": 0.37 },
+        "CDK14": { "d": 356, "l": 2563, "o": 0.24 },
+        "CDK17": { "d": 432, "l": 2939, "o": 0.24 },
+        "CDK20f7.77": { "d": 508, "l": 3951, "o": 0.15 },
+        "CDK20f6.8": { "d": 508, "l": 3454, "o": 0.15 },
+        "CDK24": { "d": 610, "l": 3974, "o": 0.22 },
         "C8": { "di": 8, "f": 10, "o": 0.39 },
         "C9.25": { "di": 9.25, "f": 10, "o": 0.36 },
         "C11": { "di": 11, "f": 10, "o": 0.34 },
         "C14": { "di": 14, "f": 10, "o": 0.32 },
+        "AT6RC": { "di": 6, "l": 1370, "o": 0.50 },
         "AT10RC": { "di": 10, "l": 2000, "o": 0.43 },
-        "GSRC10": { "di": 10, "l": 2000, "o": 0.44 },
-        "GSRC12": { "di": 12, "l": 2432, "o": 0.49 },
+        "TSRC8": { "d": 203, "l": 1624, "o": 0.42 },
+        "GSRC10": { "d": 254, "l": 2000, "o": 0.44 },
+        "GSRC12": { "d": 304, "l": 2432, "o": 0.49 },
         "GSRC14": { "di": 14, "l": 2854, "o": 0.5 },
         "LX200-8f10": { "di": 8, "f": 10, "o": 0.38 },
         "LX200-10f10": { "di": 10, "f": 10, "o": 0.37 },
@@ -38,8 +61,13 @@ default_json_data = """
         "ACF10f8": { "di": 10, "f": 8, "o": 0.47 },
         "ACF12f8": { "di": 12, "f": 8, "o": 0.41 },
         "ACF14f8": { "di": 14, "f": 8, "o": 0.36 },
+        "SWE250PDS": { "d": 250, "l": 1200, "o": 0.25 },
+        "MEWLON180": { "d": 180, "l": 2160, "o": 0.3 },
+        "ONTC808": { "d": 203, "l": 800, "o": 0.36 },
         "ONTC1010": { "d": 254, "l": 1000, "o": 0.31 },
         "ONTC1212": { "d": 303, "l": 1200, "o": 0.29 },
+        "RH200": { "d": 200, "l": 600, "o": 0.55 },
+        "RH305": { "d": 305, "l": 1159, "o": 0.24 },
         "RASA8": { "di": 8, "l": 400, "o": 0.46 },
         "RASA11": { "di": 11, "l": 620, "o": 0.50 },
         "HUBBLE": { "d": 2400, "l": 57600, "o": 0.127, "t": 0.85 },
@@ -53,22 +81,48 @@ default_json_data = """
         "TMT": { "d": 30000,  "l": 450000, "o": 0.103 }
     },
     "cameras": {
+        "ASI071": { "h": 4944, "v": 3284, "p": 4.79, "q": 0.50 },
         "ASI120": { "h": 1280, "v": 960, "p": 3.75, "q": 0.80 },
-        "ASI6200": { "h": 9576, "v": 6388, "p": 3.76, "q": 0.91 },
+        "ASI2400MC": { "m": "ZWO", "s": "IMX410", "sm": "Sony", "h": 6072, "v": 4042, "p": 5.94, "q": 0.8 },
+        "ASI2600": { "h": 6248, "v": 4176, "p": 3.76, "q": 0.8 },
+        "ASI6200": { "m": "ZWO", "s": "IMX455", "sm": "Sony", "h": 9576, "v": 6388, "p": 3.76, "q": 0.91 },
         "ASI1600": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
+        "ASI462MC": { "h": 1936, "v": 1096, "p": 2.9, "q": 0.9 },
+        "ASI290": { "h": 1936, "v": 1096, "p": 2.9, "q": 0.8 },
+        "ASI294": { "h": 4144, "v": 2822, "p": 4.63, "q": 0.75 },
+        "ASI385": { "h": 1936, "v": 1096, "p": 3.75, "q": 0.80 },
         "ASI533": { "h": 3008, "v": 3008, "p": 3.76, "q": 0.80 },
         "ASI183": { "h": 5496, "v": 3672, "p": 2.40, "q": 0.84 },
         "ATIK11000": { "h": 4007, "v": 2671, "p": 9.0, "q": 0.5 },
+        "ATIK4000": { "h": 2047, "v": 2047, "p": 7.4, "q": 0.55 },
+        "KAI11002": { "h": 4008, "v": 2672, "p": 9.0, "q": 0.5 },
         "ATIK16200": { "h": 4499, "v": 3599, "p": 6.0, "q": 0.6 },
         "ATIK383": { "h": 3354, "v": 2529, "p": 5.4, "q": 0.56 },
         "ATIKONE6": { "h": 2749, "v": 2199, "p": 4.54, "q": 0.66 },
         "ATIKONE9": { "h": 3380, "v": 2704, "p": 3.69, "q": 0.77 },
         "AtikHorizonII": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
         "EOS40D": { "h": 3888, "v": 2592, "p": 5.7, "q": 0.33 },
+        "EOS500D": { "h": 4752 , "v": 3168 , "p": 4.68, "q": 0.38 },
+        "EOS550D": { "h": 5184 , "v": 3456, "p": 4.29, "q": 0.4 },
+        "EOS70D": { "h": 5472, "v": 3648, "p": 4.1, "q": 0.48 },
         "EOS6D": { "h": 5472, "v": 3648, "p": 6.54, "q": 0.5 },
+        "D5300": { "h": 6000, "v": 4000, "p": 3.92, "q": 0.55 },
+        "D5600": { "h": 6000, "v": 4000, "p": 3.92, "q": 0.52 },
+        "D610": { "m": "Nikon", "h": 6016, "v": 4016, "p":  5.95, "q": 0.49 },
+        "KAF3200ME": { "h": 2184, "v": 1472, "p": 6.8, "q": 0.85 },
         "KAF8300": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.56 },
+        "QSI683": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.57 },
+        "QSI6120": { "m": "QSI", "s": "ICX834", "sm": "Sony", "h": 4250, "v": 2838, "p": 3.1, "q": 0.77 },
         "KAF16803": { "h": 4096, "v": 4096, "p": 9.0, "q": 0.6 },
+        "KL4040": { "m": "FLI", "s": "GSense4040", "sm": "GPixel", "h": 4096, "v": 4096, "p": 9.0, "q": 0.74 },
+        "QHY163": { "h": 4656, "v": 3522, "p": 3.8, "q": 0.6 },
+        "QHY183": { "h": 5544, "v": 3694, "p": 2.4, "q": 0.84 },
+        "QHY268M": { "m": "QHY", "sm": "Sony", "s": "IMX571", "h": 6280, "v": 4210, "p": 3.76, "q": 0.9 },
+        "QHY23": { "h": 3468, "v": 2728, "p": 3.69, "q": 0.8 },
+        "ST10XME": { "m": "SBIG", "h": 2184, "v": 1472, "p": 6.8, "q": 0.5 },
+        "SX694": { "h": 2750, "v": 2200, "p": 4.54, "q": 0.77 },
         "SONYA7S": { "h": 4240, "v": 2832, "p": 8.4, "q": 0.65 },
+        "IMX511": { "h": 5215, "v": 4927, "p": 1.12, "q": 0.8 },
         "HAWAII-4RG": { "h": 4096, "v": 4096, "p": 15, "q": 0.70 },
         "ACS": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.09 },
         "WFC3": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.354 }
@@ -281,7 +335,14 @@ def main():
             if args.f2:
                 t2_focal_ratio = args.f2 * t2_focal_reducer
             else:
+<<<<<<< HEAD
                 t2_focal_ratio = t1_focal_ratio * t2_focal_reducer
+=======
+                if args.r2:
+                    t2_focal_ratio = (t1_focal_ratio/t1_focal_reducer) * t2_focal_reducer
+                else:
+                    t2_focal_ratio = t1_focal_ratio
+>>>>>>> master
             t2_focal_length = t2_aperture_diameter * t2_focal_ratio
             t2_obstruction_ratio = t1_obstruction_ratio
             t2_transmittance_factor = t1_transmittance_factor
@@ -306,6 +367,33 @@ def main():
     c2_v = args.c2v if args.c2v else c1_v
     c2_p = args.c2p if args.c2p else c1_p
     c2_b = args.c2b if args.c2b else 1
+
+    url_args = 'https://lambermont.dyndns.org/astro/code/compare-telescopes.html?a'
+    url_args += '&d1={}'.format(args.d1) if args.d1 else ''
+    url_args += "&di1={}".format(args.di1) if args.di1 else ''
+    url_args += "&o1={}".format(args.o1) if args.o1 else ''
+    url_args += "&l1={}".format(args.l1) if args.l1 else ''
+    url_args += "&f1={}".format(args.f1) if args.f1 else ''
+    url_args += "&r1={}".format(args.r1) if args.r1 else ''
+    url_args += "&t1={}".format(args.t1) if args.t1 else ''
+    url_args += "&c1h={}".format(args.c1h) if args.c1h else ''
+    url_args += "&c1v={}".format(args.c1v) if args.c1v else ''
+    url_args += "&c1p={}".format(args.c1p) if args.c1p else ''
+    url_args += "&c1q={}".format(args.c1q) if args.c1q else ''
+    url_args += "&c1b={}".format(args.c1b) if args.c1b else ''
+    url_args += "&d2={}".format(args.d2) if args.d2 else ''
+    url_args += "&di2={}".format(args.di2) if args.di2 else ''
+    url_args += "&o2={}".format(args.o2) if args.o2 else ''
+    url_args += "&l2={}".format(args.l2) if args.l2 else ''
+    url_args += "&f2={}".format(args.f2) if args.f2 else ''
+    url_args += "&r2={}".format(args.r2) if args.r2 else ''
+    url_args += "&t2={}".format(args.t2) if args.t2 else ''
+    url_args += "&c2h={}".format(args.c2h) if args.c2h else ''
+    url_args += "&c2v={}".format(args.c2v) if args.c2v else ''
+    url_args += "&c2p={}".format(args.c2p) if args.c2p else ''
+    url_args += "&c2q={}".format(args.c2q) if args.c2q else ''
+    url_args += "&c2b={}".format(args.c2b) if args.c2b else ''
+    print(url_args + '\n')
 
     c1_h /= c1_b
     c1_v /= c1_b
