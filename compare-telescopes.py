@@ -46,9 +46,12 @@ default_json_data = """
         "CDK20f6.8": { "d": 508, "l": 3454, "o": 0.15 },
         "CDK24": { "d": 610, "l": 3974, "o": 0.22 },
         "C8": { "di": 8, "f": 10, "o": 0.39 },
+        "C8-H3": { "di": 8, "l": 425, "o": 0.39 },
+        "C8-H4": { "di": 8, "l": 390, "o": 0.39 },
         "C9.25": { "di": 9.25, "f": 10, "o": 0.36 },
         "C11": { "di": 11, "f": 10, "o": 0.34 },
         "C14": { "di": 14, "f": 10, "o": 0.32 },
+        "C14-H4": { "di": 14, "l": 715, "o": 0.32 },
         "AT6RC": { "di": 6, "l": 1370, "o": 0.50 },
         "AT10RC": { "di": 10, "l": 2000, "o": 0.43 },
         "TSRC8": { "d": 203, "l": 1624, "o": 0.42 },
@@ -71,6 +74,7 @@ default_json_data = """
         "RASA8": { "di": 8, "l": 400, "o": 0.46 },
         "RASA11": { "di": 11, "l": 620, "o": 0.50 },
         "HUBBLE": { "d": 2400, "l": 57600, "o": 0.127, "t": 0.85 },
+        "EUCLID": { "d": 1200, "l": 24500, "o": 0.0, "t": 0.0 },
         "ELT": { "d": 39300, "l": 743400, "o": 0.104 },
         "VLT": { "d": 8200,  "l": 120000, "o": 0.136 },
         "GTC": { "d": 10400,  "l": 169900, "o": 0.115 },
@@ -125,7 +129,8 @@ default_json_data = """
         "IMX511": { "h": 5215, "v": 4927, "p": 1.12, "q": 0.8 },
         "HAWAII-4RG": { "h": 4096, "v": 4096, "p": 15, "q": 0.70 },
         "ACS": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.09 },
-        "WFC3": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.354 }
+        "WFC3": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.354 },
+        "EUCLID-VIS": { "h": 24576, "v": 24792, "p": 12, "q": 0.9 }
     }
 }
 """
@@ -335,14 +340,10 @@ def main():
             if args.f2:
                 t2_focal_ratio = args.f2 * t2_focal_reducer
             else:
-<<<<<<< HEAD
-                t2_focal_ratio = t1_focal_ratio * t2_focal_reducer
-=======
                 if args.r2:
                     t2_focal_ratio = (t1_focal_ratio/t1_focal_reducer) * t2_focal_reducer
                 else:
                     t2_focal_ratio = t1_focal_ratio
->>>>>>> master
             t2_focal_length = t2_aperture_diameter * t2_focal_ratio
             t2_obstruction_ratio = t1_obstruction_ratio
             t2_transmittance_factor = t1_transmittance_factor
