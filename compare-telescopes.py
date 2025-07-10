@@ -3,6 +3,7 @@
 Compare the imaging performance of 2 telescopes for astrophotography.
 Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 
+Version 1.5 shared JSON database between Python and HTML versions, HTML telescope/camera dropdowns
 Version 1.4 add a known list of telescopes and cameras, -s and -c
 Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps
 Version 1.2 add defaults for aperture diameter, focal length, focal ratio
@@ -163,11 +164,26 @@ class Gear():
         print("file {}".format(file))
         self.file_data = None
         self.default_data = json.loads(default_json_data)
+        
+        # Try to load the shared complete data file first
+        if file is None:
+            file = "telescopes-and-cameras-complete.json"
+        
         if os.path.isfile(file):
             with open(file) as json_file:
                 self.file_data = json.load(json_file)
-        self.scopes = {x.lower(): y for x, y in {**self.file_data['scopes'], **self.default_data['scopes']}.items()}
-        self.cameras = {x.lower(): y for x, y in {**self.file_data['cameras'], **self.default_data['cameras']}.items()}
+                # If we successfully loaded the complete file, use it as both file and default data
+                if file == "telescopes-and-cameras-complete.json":
+                    self.scopes = {x.lower(): y for x, y in self.file_data['scopes'].items()}
+                    self.cameras = {x.lower(): y for x, y in self.file_data['cameras'].items()}
+                else:
+                    # Merge with default data for backwards compatibility
+                    self.scopes = {x.lower(): y for x, y in {**self.file_data['scopes'], **self.default_data['scopes']}.items()}
+                    self.cameras = {x.lower(): y for x, y in {**self.file_data['cameras'], **self.default_data['cameras']}.items()}
+        else:
+            # Fall back to default data only
+            self.scopes = {x.lower(): y for x, y in self.default_data['scopes'].items()}
+            self.cameras = {x.lower(): y for x, y in self.default_data['cameras'].items()}
 
     def list_scopes_and_cameras(self, as_json=None):
         if as_json:
