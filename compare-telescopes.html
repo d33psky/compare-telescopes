@@ -413,25 +413,139 @@ var example = 0;
 var equipmentData = null;
 var customEquipment = { scopes: {}, cameras: {} };
 
-// Load equipment data from JSON file
-async function loadEquipmentData() {
+// Load equipment data from file
+function loadEquipmentData() {
+    // Try loading JS file first as it works better with file:// protocol
+    tryJavaScriptFile();
+}
+
+// Try with constructed full path
+function tryFullPath() {
+    const currentPath = window.location.href;
+    const pathParts = currentPath.split('/');
+    pathParts.pop(); // Remove the HTML filename
+    const jsonPath = pathParts.join('/') + '/telescopes-and-cameras.json';
+    
+    console.log('Trying full path:', jsonPath);
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', jsonPath, true);
+    xhr.onload = function() {
+        if (xhr.status === 200 || xhr.status === 0) {
+            try {
+                equipmentData = JSON.parse(xhr.responseText);
+                console.log('Successfully loaded equipment data via XMLHttpRequest with full path');
+                populateDropdowns();
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                tryFetchMethod(jsonPath);
+            }
+        } else {
+            console.error('XMLHttpRequest with full path failed with status:', xhr.status);
+            tryFetchMethod(jsonPath);
+        }
+    };
+    xhr.onerror = function() {
+        console.error('XMLHttpRequest error with full path');
+        tryFetchMethod(jsonPath);
+    };
+    
     try {
-        // Get the path of the current HTML file and construct path relative to it
-        const currentPath = window.location.href;
-        const pathParts = currentPath.split('/');
-        pathParts.pop(); // Remove the HTML filename
-        const jsonPath = pathParts.join('/') + '/telescopes-and-cameras-complete.json';
-        
+        xhr.send();
+    } catch (e) {
+        console.error('XMLHttpRequest send failed:', e);
+        tryFetchMethod(jsonPath);
+    }
+}
+
+// Fallback to fetch API
+async function tryFetchMethod(jsonPath) {
+    try {
         const response = await fetch(jsonPath);
         equipmentData = await response.json();
+        console.log('Successfully loaded equipment data via fetch');
         populateDropdowns();
     } catch (error) {
-        console.error('Error loading equipment data:', error);
+        console.error('Fetch also failed:', error);
         console.log('Attempted to load from:', jsonPath);
-        // Fallback to empty data structure
-        equipmentData = { scopes: {}, cameras: {} };
-        populateDropdowns();
+        // Last resort: try loading from same directory without full path
+        tryRelativeLoad();
     }
+}
+
+// Try loading from relative path
+async function tryRelativeLoad() {
+    try {
+        const response = await fetch('telescopes-and-cameras.json');
+        equipmentData = await response.json();
+        console.log('Successfully loaded equipment data via relative path');
+        populateDropdowns();
+    } catch (error) {
+        console.error('All loading methods failed, trying JS file as last resort');
+        // Last resort: try loading as JS file
+        tryJavaScriptFile();
+    }
+}
+
+// Try loading data as JavaScript file (bypasses CORS)
+function tryJavaScriptFile() {
+    const script = document.createElement('script');
+    script.src = 'telescopes-and-cameras.js';
+    script.onload = function() {
+        if (typeof telescopesAndCamerasData !== 'undefined') {
+            equipmentData = telescopesAndCamerasData;
+            console.log('Successfully loaded equipment data via JS file');
+            populateDropdowns();
+        } else {
+            console.error('JS file loaded but data not found');
+            tryJSONFile();
+        }
+    };
+    script.onerror = function() {
+        console.error('Failed to load JS file, trying JSON');
+        tryJSONFile();
+    };
+    document.head.appendChild(script);
+}
+
+// Try loading JSON file as fallback
+function tryJSONFile() {
+    // Try simple relative path for JSON
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'telescopes-and-cameras.json', true);
+    xhr.onload = function() {
+        if (xhr.status === 200 || xhr.status === 0) {
+            try {
+                equipmentData = JSON.parse(xhr.responseText);
+                console.log('Successfully loaded equipment data via JSON file');
+                populateDropdowns();
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                tryFullPath();
+            }
+        } else {
+            console.error('JSON XMLHttpRequest failed with status:', xhr.status);
+            tryFullPath();
+        }
+    };
+    xhr.onerror = function() {
+        console.error('JSON XMLHttpRequest error');
+        tryFullPath();
+    };
+    
+    try {
+        xhr.send();
+    } catch (e) {
+        console.error('JSON XMLHttpRequest send failed:', e);
+        tryFullPath();
+    }
+}
+
+// Final fallback
+function fallbackToEmpty() {
+    equipmentData = { scopes: {}, cameras: {} };
+    alert('Warning: Could not load telescope/camera database. Dropdown selections will be empty.\n\nFor local file usage, ensure both HTML and telescopes-and-cameras.js files are in the same directory.');
+    populateDropdowns();
 }
 
 // Populate dropdown menus with telescope and camera options
