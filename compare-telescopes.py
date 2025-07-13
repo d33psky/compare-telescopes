@@ -3,7 +3,7 @@
 Compare the imaging performance of 2 telescopes for astrophotography.
 Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 
-Version 1.5 shared JSON database between Python and HTML versions, HTML telescope/camera dropdowns
+Version 1.5 shared JS database between Python and HTML versions, HTML telescope/camera dropdowns
 Version 1.4 add a known list of telescopes and cameras, -s and -c
 Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps
 Version 1.2 add defaults for aperture diameter, focal length, focal ratio
@@ -35,19 +35,23 @@ class Gear():
             print("Please ensure telescopes-and-cameras.js is in the same directory as compare-telescopes.py.")
             sys.exit(1)
         
-        # Load JavaScript file and extract JSON data
+        # Load JavaScript file and extract data
         with open(file, 'r') as js_file:
             js_content = js_file.read()
-            # Extract the JSON data from the JavaScript variable
+            # Extract the data from the JavaScript variable
             start = js_content.find('{')
             end = js_content.rfind('}') + 1
             if start != -1 and end != 0:
-                json_str = js_content[start:end]
-                self.file_data = json.loads(json_str)
-                self.scopes = {x.lower(): y for x, y in self.file_data['scopes'].items()}
-                self.cameras = {x.lower(): y for x, y in self.file_data['cameras'].items()}
+                data_str = js_content[start:end]
+                try:
+                    self.file_data = json.loads(data_str)
+                    self.scopes = {x.lower(): y for x, y in self.file_data['scopes'].items()}
+                    self.cameras = {x.lower(): y for x, y in self.file_data['cameras'].items()}
+                except json.JSONDecodeError as e:
+                    print("Error: Could not parse data from JS file '{}': {}".format(file, e))
+                    sys.exit(1)
             else:
-                print("Error: Could not extract JSON data from JS file '{}'.".format(file))
+                print("Error: Could not extract data from JS file '{}'.".format(file))
                 print("The file format may be incorrect.")
                 sys.exit(1)
 
