@@ -13,7 +13,7 @@ The project has dual interfaces - a Python CLI tool and a web-based HTML version
 **Core Components:**
 - `compare-telescopes.py`: Main CLI application (573 lines) with comprehensive comparison logic
 - `compare-telescopes.html`: Web interface with interactive forms
-- `telescopes-and-cameras.json`: Database of 94+ telescopes and 37+ cameras with specifications
+- `telescopes-and-cameras.js`: Database of 94+ telescopes and 37+ cameras with specifications
 
 **Database Structure:**
 - Telescopes: aperture diameter (`d`/`di`), focal length (`l`), focal ratio (`f`), obstruction ratio (`o`), transmittance (`t`)
@@ -56,9 +56,9 @@ python3 compare-telescopes.py --formulas
 - Supports focal reducers and camera binning
 
 **Database Management:**
-- JSON format for telescope and camera specifications
-- Embedded default data in Python file as fallback
-- External JSON file takes precedence when present
+- JavaScript format for telescope and camera specifications (telescopes-and-cameras.js)
+- Python script reads the JS file and extracts the data structure
+- Single source of truth shared between Python CLI and HTML web interface
 
 ## Code Conventions
 
