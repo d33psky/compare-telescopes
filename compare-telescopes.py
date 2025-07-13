@@ -348,18 +348,74 @@ def main():
     t2_t1_object_signal = t2_aperture_area / t1_aperture_area * c2_q / c1_q * t2_transmittance_factor / t1_transmittance_factor
 
     if args.brief or not args.detail:
-        print(
-            'Telescope 1 f/{:<5.2f} l={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x e={:5.2f}x pe={:5.2f}x ps={:5.2f}x os={:5.2f}x'.format(
-                t1_focal_ratio, t1_focal_length, t1_aperture_diameter, 100 * t1_obstruction_ratio, t1_arcsec_p,
-                                                                       t1_view_h / 60, t1_view_v / 60,
-                t1_t2_view_factor, t1_t2_extended_object_irradiance_factor, t1_t2_point_object_irradiance_factor,
-                t1_t2_etendue, t1_t2_pixel_etendue, t1_t2_pixel_signal, t1_t2_object_signal))
-        print(
-            'Telescope 2 f/{:<5.2f} l={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x e={:5.2f}x pe={:5.2f}x ps={:5.2f}x os={:5.2f}x'.format(
-                t2_focal_ratio, t2_focal_length, t2_aperture_diameter, 100 * t2_obstruction_ratio, t2_arcsec_p,
-                                                                       t2_view_h / 60, t2_view_v / 60,
-                t2_t1_view_factor, t2_t1_extended_object_irradiance_factor, t2_t1_point_object_irradiance_factor,
-                t2_t1_etendue, t2_t1_pixel_etendue, t2_t1_pixel_signal, t2_t1_object_signal))
+        # Calculate field widths dynamically based on actual values
+        # For focal ratio
+        fr_width = max(len('{:.2f}'.format(t1_focal_ratio)), len('{:.2f}'.format(t2_focal_ratio)))
+        # For focal length
+        fl_width = max(len('{:.0f}'.format(t1_focal_length)), len('{:.0f}'.format(t2_focal_length)))
+        # For diameter
+        d_width = max(len('{:.0f}'.format(t1_aperture_diameter)), len('{:.0f}'.format(t2_aperture_diameter)))
+        # For obstruction percentage
+        o_width = max(len('{:.0f}'.format(100 * t1_obstruction_ratio)), len('{:.0f}'.format(100 * t2_obstruction_ratio)))
+        # For resolution - adjust precision based on value magnitude
+        if t1_arcsec_p < 0.1 or t2_arcsec_p < 0.1:
+            res1_str = '{:.3f}'.format(t1_arcsec_p) if t1_arcsec_p < 0.1 else '{:.2f}'.format(t1_arcsec_p)
+            res2_str = '{:.3f}'.format(t2_arcsec_p) if t2_arcsec_p < 0.1 else '{:.2f}'.format(t2_arcsec_p)
+            res_width = max(len(res1_str), len(res2_str))
+        else:
+            res_width = max(len('{:.2f}'.format(t1_arcsec_p)), len('{:.2f}'.format(t2_arcsec_p)))
+        # For FOV values
+        fov_h1_width = max(len('{:.1f}'.format(t1_view_h / 60)), len('{:.1f}'.format(t2_view_h / 60)))
+        fov_v1_width = max(len('{:.1f}'.format(t1_view_v / 60)), len('{:.1f}'.format(t2_view_v / 60)))
+        # For comparison factors
+        fov_factor_width = max(len('{:.2f}'.format(t1_t2_view_factor)), len('{:.2f}'.format(t2_t1_view_factor)))
+        eoi_width = max(len('{:.2f}'.format(t1_t2_extended_object_irradiance_factor)), len('{:.2f}'.format(t2_t1_extended_object_irradiance_factor)))
+        poi_width = max(len('{:.2f}'.format(t1_t2_point_object_irradiance_factor)), len('{:.2f}'.format(t2_t1_point_object_irradiance_factor)))
+        e_width = max(len('{:.2f}'.format(t1_t2_etendue)), len('{:.2f}'.format(t2_t1_etendue)))
+        pe_width = max(len('{:.2f}'.format(t1_t2_pixel_etendue)), len('{:.2f}'.format(t2_t1_pixel_etendue)))
+        ps_width = max(len('{:.2f}'.format(t1_t2_pixel_signal)), len('{:.2f}'.format(t2_t1_pixel_signal)))
+        os_width = max(len('{:.2f}'.format(t1_t2_object_signal)), len('{:.2f}'.format(t2_t1_object_signal)))
+
+        # Build format strings with dynamic widths
+        # Format resolution values with appropriate precision
+        res1_str = '{:.3f}'.format(t1_arcsec_p) if t1_arcsec_p < 0.1 else '{:.2f}'.format(t1_arcsec_p)
+        res2_str = '{:.3f}'.format(t2_arcsec_p) if t2_arcsec_p < 0.1 else '{:.2f}'.format(t2_arcsec_p)
+
+        # Build telescope output lines with proper alignment
+        line1_parts = [
+            'Telescope 1',
+            'f/{:>{}.2f}'.format(t1_focal_ratio, fr_width),
+            'fl={:>{}.0f}mm'.format(t1_focal_length, fl_width),
+            'D={:>{}.0f}mm'.format(t1_aperture_diameter, d_width),
+            'O={:>{}.0f}%'.format(100 * t1_obstruction_ratio, o_width),
+            'res={:>{}}\"/p'.format(res1_str, res_width),
+            'FOV={:>{}.1f}\'x{:>{}.1f}\'={:>{}.2f}x'.format(t1_view_h / 60, fov_h1_width, t1_view_v / 60, fov_v1_width, t1_t2_view_factor, fov_factor_width),
+            'eoi={:>{}.2f}x'.format(t1_t2_extended_object_irradiance_factor, eoi_width),
+            'poi={:>{}.2f}x'.format(t1_t2_point_object_irradiance_factor, poi_width),
+            'e={:>{}.2f}x'.format(t1_t2_etendue, e_width),
+            'pe={:>{}.2f}x'.format(t1_t2_pixel_etendue, pe_width),
+            'ps={:>{}.2f}x'.format(t1_t2_pixel_signal, ps_width),
+            'os={:>{}.2f}x'.format(t1_t2_object_signal, os_width)
+        ]
+
+        line2_parts = [
+            'Telescope 2',
+            'f/{:>{}.2f}'.format(t2_focal_ratio, fr_width),
+            'fl={:>{}.0f}mm'.format(t2_focal_length, fl_width),
+            'D={:>{}.0f}mm'.format(t2_aperture_diameter, d_width),
+            'O={:>{}.0f}%'.format(100 * t2_obstruction_ratio, o_width),
+            'res={:>{}}\"/p'.format(res2_str, res_width),
+            'FOV={:>{}.1f}\'x{:>{}.1f}\'={:>{}.2f}x'.format(t2_view_h / 60, fov_h1_width, t2_view_v / 60, fov_v1_width, t2_t1_view_factor, fov_factor_width),
+            'eoi={:>{}.2f}x'.format(t2_t1_extended_object_irradiance_factor, eoi_width),
+            'poi={:>{}.2f}x'.format(t2_t1_point_object_irradiance_factor, poi_width),
+            'e={:>{}.2f}x'.format(t2_t1_etendue, e_width),
+            'pe={:>{}.2f}x'.format(t2_t1_pixel_etendue, pe_width),
+            'ps={:>{}.2f}x'.format(t2_t1_pixel_signal, ps_width),
+            'os={:>{}.2f}x'.format(t2_t1_object_signal, os_width)
+        ]
+
+        print(' '.join(line1_parts))
+        print(' '.join(line2_parts))
         if args.legend:
             print(
                 '# F-number focalLength apertureDiameter Obstruction RESolution FieldOfView ExtendedObjectIrradiance PixelOI Etendue PixelEtendue PixelSignal ObjectSignal')
