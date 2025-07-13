@@ -376,42 +376,80 @@ def main():
         ps_width = max(len('{:.2f}'.format(t1_t2_pixel_signal)), len('{:.2f}'.format(t2_t1_pixel_signal)))
         os_width = max(len('{:.2f}'.format(t1_t2_object_signal)), len('{:.2f}'.format(t2_t1_object_signal)))
 
+        # Helper function to format values with aligned decimal points
+        def format_with_precision(val1, val2, default_precision=2, small_threshold=0.1, zero_threshold=0.005):
+            """Format two values ensuring decimal points align and no false zeros."""
+            # Determine precision needed
+            if val1 < small_threshold or val2 < small_threshold:
+                precision = 3
+            else:
+                precision = default_precision
+
+            # Format both values with same precision
+            str1 = '{{:.{}f}}'.format(precision).format(val1)
+            str2 = '{{:.{}f}}'.format(precision).format(val2)
+
+            # Check if either rounds to zero and increase precision if needed
+            while (float(str1) == 0 and val1 > zero_threshold) or (float(str2) == 0 and val2 > zero_threshold):
+                precision += 1
+                str1 = '{{:.{}f}}'.format(precision).format(val1)
+                str2 = '{{:.{}f}}'.format(precision).format(val2)
+
+            return str1, str2, max(len(str1), len(str2))
+
         # Build format strings with dynamic widths
-        # Format resolution values with appropriate precision
-        res1_str = '{:.3f}'.format(t1_arcsec_p) if t1_arcsec_p < 0.1 else '{:.2f}'.format(t1_arcsec_p)
-        res2_str = '{:.3f}'.format(t2_arcsec_p) if t2_arcsec_p < 0.1 else '{:.2f}'.format(t2_arcsec_p)
+        # Format all values with proper decimal alignment
+        res1_str, res2_str, res_width = format_with_precision(t1_arcsec_p, t2_arcsec_p, 2, 0.1, 0.005)
+
+        # Format focal ratios with same precision
+        fr1_str = '{:.2f}'.format(t1_focal_ratio)
+        fr2_str = '{:.2f}'.format(t2_focal_ratio)
+        fr_width = max(len(fr1_str), len(fr2_str))
+
+        # Format FOV values
+        fov_h1_str, fov_h2_str, fov_h_width = format_with_precision(t1_view_h / 60, t2_view_h / 60, 1, 1.0, 0.05)
+        fov_v1_str, fov_v2_str, fov_v_width = format_with_precision(t1_view_v / 60, t2_view_v / 60, 1, 1.0, 0.05)
+
+        # Format comparison factors
+        fov_factor1_str, fov_factor2_str, fov_factor_width = format_with_precision(t1_t2_view_factor, t2_t1_view_factor, 2, 0.1, 0.005)
+        eoi1_str, eoi2_str, eoi_width = format_with_precision(t1_t2_extended_object_irradiance_factor, t2_t1_extended_object_irradiance_factor, 2, 0.1, 0.005)
+        poi1_str, poi2_str, poi_width = format_with_precision(t1_t2_point_object_irradiance_factor, t2_t1_point_object_irradiance_factor, 2, 0.1, 0.005)
+        e1_str, e2_str, e_width = format_with_precision(t1_t2_etendue, t2_t1_etendue, 2, 0.1, 0.005)
+        pe1_str, pe2_str, pe_width = format_with_precision(t1_t2_pixel_etendue, t2_t1_pixel_etendue, 2, 0.1, 0.005)
+        ps1_str, ps2_str, ps_width = format_with_precision(t1_t2_pixel_signal, t2_t1_pixel_signal, 2, 0.1, 0.005)
+        os1_str, os2_str, os_width = format_with_precision(t1_t2_object_signal, t2_t1_object_signal, 2, 0.1, 0.005)
 
         # Build telescope output lines with proper alignment
         line1_parts = [
             'Telescope 1',
-            'f/{:>{}.2f}'.format(t1_focal_ratio, fr_width),
+            'f/{:>{}}'.format(fr1_str, fr_width),
             'fl={:>{}.0f}mm'.format(t1_focal_length, fl_width),
             'D={:>{}.0f}mm'.format(t1_aperture_diameter, d_width),
             'O={:>{}.0f}%'.format(100 * t1_obstruction_ratio, o_width),
             'res={:>{}}\"/p'.format(res1_str, res_width),
-            'FOV={:>{}.1f}\'x{:>{}.1f}\'={:>{}.2f}x'.format(t1_view_h / 60, fov_h1_width, t1_view_v / 60, fov_v1_width, t1_t2_view_factor, fov_factor_width),
-            'eoi={:>{}.2f}x'.format(t1_t2_extended_object_irradiance_factor, eoi_width),
-            'poi={:>{}.2f}x'.format(t1_t2_point_object_irradiance_factor, poi_width),
-            'e={:>{}.2f}x'.format(t1_t2_etendue, e_width),
-            'pe={:>{}.2f}x'.format(t1_t2_pixel_etendue, pe_width),
-            'ps={:>{}.2f}x'.format(t1_t2_pixel_signal, ps_width),
-            'os={:>{}.2f}x'.format(t1_t2_object_signal, os_width)
+            'FOV={:>{}}\'x{:>{}}\'={:>{}}x'.format(fov_h1_str, fov_h_width, fov_v1_str, fov_v_width, fov_factor1_str, fov_factor_width),
+            'eoi={:>{}}x'.format(eoi1_str, eoi_width),
+            'poi={:>{}}x'.format(poi1_str, poi_width),
+            'e={:>{}}x'.format(e1_str, e_width),
+            'pe={:>{}}x'.format(pe1_str, pe_width),
+            'ps={:>{}}x'.format(ps1_str, ps_width),
+            'os={:>{}}x'.format(os1_str, os_width)
         ]
 
         line2_parts = [
             'Telescope 2',
-            'f/{:>{}.2f}'.format(t2_focal_ratio, fr_width),
+            'f/{:>{}}'.format(fr2_str, fr_width),
             'fl={:>{}.0f}mm'.format(t2_focal_length, fl_width),
             'D={:>{}.0f}mm'.format(t2_aperture_diameter, d_width),
             'O={:>{}.0f}%'.format(100 * t2_obstruction_ratio, o_width),
             'res={:>{}}\"/p'.format(res2_str, res_width),
-            'FOV={:>{}.1f}\'x{:>{}.1f}\'={:>{}.2f}x'.format(t2_view_h / 60, fov_h1_width, t2_view_v / 60, fov_v1_width, t2_t1_view_factor, fov_factor_width),
-            'eoi={:>{}.2f}x'.format(t2_t1_extended_object_irradiance_factor, eoi_width),
-            'poi={:>{}.2f}x'.format(t2_t1_point_object_irradiance_factor, poi_width),
-            'e={:>{}.2f}x'.format(t2_t1_etendue, e_width),
-            'pe={:>{}.2f}x'.format(t2_t1_pixel_etendue, pe_width),
-            'ps={:>{}.2f}x'.format(t2_t1_pixel_signal, ps_width),
-            'os={:>{}.2f}x'.format(t2_t1_object_signal, os_width)
+            'FOV={:>{}}\'x{:>{}}\'={:>{}}x'.format(fov_h2_str, fov_h_width, fov_v2_str, fov_v_width, fov_factor2_str, fov_factor_width),
+            'eoi={:>{}}x'.format(eoi2_str, eoi_width),
+            'poi={:>{}}x'.format(poi2_str, poi_width),
+            'e={:>{}}x'.format(e2_str, e_width),
+            'pe={:>{}}x'.format(pe2_str, pe_width),
+            'ps={:>{}}x'.format(ps2_str, ps_width),
+            'os={:>{}}x'.format(os2_str, os_width)
         ]
 
         print(' '.join(line1_parts))

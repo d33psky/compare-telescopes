@@ -1053,52 +1053,75 @@ function CT1_OnClick() {
     var t1_t2_object_signal = t1_aperture_area/t2_aperture_area * c1_q/c2_q * t1_transmittance_factor/t2_transmittance_factor;
     var t2_t1_object_signal = t2_aperture_area/t1_aperture_area * c2_q/c1_q * t2_transmittance_factor/t1_transmittance_factor;
 
+    // Helper function to format values with aligned decimal points
+    function formatWithPrecision(val1, val2, defaultPrecision, smallThreshold, zeroThreshold) {
+        defaultPrecision = defaultPrecision || 2;
+        smallThreshold = smallThreshold || 0.1;
+        zeroThreshold = zeroThreshold || 0.005;
+
+        // Determine precision needed
+        var precision = (val1 < smallThreshold || val2 < smallThreshold) ? 3 : defaultPrecision;
+
+        // Format both values with same precision
+        var str1 = val1.toFixed(precision);
+        var str2 = val2.toFixed(precision);
+
+        // Check if either rounds to zero and increase precision if needed
+        while ((parseFloat(str1) === 0 && val1 > zeroThreshold) || (parseFloat(str2) === 0 && val2 > zeroThreshold)) {
+            precision++;
+            str1 = val1.toFixed(precision);
+            str2 = val2.toFixed(precision);
+        }
+
+        return [str1, str2, Math.max(str1.length, str2.length)];
+    }
+
     // Calculate dynamic field widths based on actual values
-    var fr_width = Math.max(t1_focal_ratio.toFixed(2).length, t2_focal_ratio.toFixed(2).length);
+    var fr1_str = t1_focal_ratio.toFixed(2);
+    var fr2_str = t2_focal_ratio.toFixed(2);
+    var fr_width = Math.max(fr1_str.length, fr2_str.length);
+
     var fl_width = Math.max(t1_focal_length.toFixed(0).length, t2_focal_length.toFixed(0).length);
     var d_width = Math.max(t1_aperture_diameter.toFixed(0).length, t2_aperture_diameter.toFixed(0).length);
     var o_width = Math.max((100*t1_obstruction_ratio).toFixed(0).length, (100*t2_obstruction_ratio).toFixed(0).length);
 
-    // For resolution - adjust precision based on value magnitude
-    var res1_str = t1_arcsec_p < 0.1 ? t1_arcsec_p.toFixed(3) : t1_arcsec_p.toFixed(2);
-    var res2_str = t2_arcsec_p < 0.1 ? t2_arcsec_p.toFixed(3) : t2_arcsec_p.toFixed(2);
-    var res_width = Math.max(res1_str.length, res2_str.length);
+    // Format values with proper decimal alignment
+    var [res1_str, res2_str, res_width] = formatWithPrecision(t1_arcsec_p, t2_arcsec_p, 2, 0.1, 0.005);
+    var [fov_h1_str, fov_h2_str, fov_h_width] = formatWithPrecision(t1_view_h/60, t2_view_h/60, 1, 1.0, 0.05);
+    var [fov_v1_str, fov_v2_str, fov_v_width] = formatWithPrecision(t1_view_v/60, t2_view_v/60, 1, 1.0, 0.05);
+    var [fov_factor1_str, fov_factor2_str, fov_factor_width] = formatWithPrecision(t1_t2_view_factor, t2_t1_view_factor, 2, 0.1, 0.005);
+    var [eoi1_str, eoi2_str, eoi_width] = formatWithPrecision(t1_t2_extended_object_irradiance_factor, t2_t1_extended_object_irradiance_factor, 2, 0.1, 0.005);
+    var [poi1_str, poi2_str, poi_width] = formatWithPrecision(t1_t2_point_object_irradiance_factor, t2_t1_point_object_irradiance_factor, 2, 0.1, 0.005);
+    var [e1_str, e2_str, e_width] = formatWithPrecision(t1_t2_etendue, t2_t1_etendue, 2, 0.1, 0.005);
+    var [pe1_str, pe2_str, pe_width] = formatWithPrecision(t1_t2_pixel_etendue, t2_t1_pixel_etendue, 2, 0.1, 0.005);
+    var [ps1_str, ps2_str, ps_width] = formatWithPrecision(t1_t2_pixel_signal, t2_t1_pixel_signal, 2, 0.1, 0.005);
+    var [os1_str, os2_str, os_width] = formatWithPrecision(t1_t2_object_signal, t2_t1_object_signal, 2, 0.1, 0.005);
 
-    var fov_h1_width = Math.max((t1_view_h/60).toFixed(1).length, (t2_view_h/60).toFixed(1).length);
-    var fov_v1_width = Math.max((t1_view_v/60).toFixed(1).length, (t2_view_v/60).toFixed(1).length);
-    var fov_factor_width = Math.max(t1_t2_view_factor.toFixed(2).length, t2_t1_view_factor.toFixed(2).length);
-    var eoi_width = Math.max(t1_t2_extended_object_irradiance_factor.toFixed(2).length, t2_t1_extended_object_irradiance_factor.toFixed(2).length);
-    var poi_width = Math.max(t1_t2_point_object_irradiance_factor.toFixed(2).length, t2_t1_point_object_irradiance_factor.toFixed(2).length);
-    var e_width = Math.max(t1_t2_etendue.toFixed(2).length, t2_t1_etendue.toFixed(2).length);
-    var pe_width = Math.max(t1_t2_pixel_etendue.toFixed(2).length, t2_t1_pixel_etendue.toFixed(2).length);
-    var ps_width = Math.max(t1_t2_pixel_signal.toFixed(2).length, t2_t1_pixel_signal.toFixed(2).length);
-    var os_width = Math.max(t1_t2_object_signal.toFixed(2).length, t2_t1_object_signal.toFixed(2).length);
-
-    var tel1 = " f/" + t1_focal_ratio.toFixed(2).padStart(fr_width);
+    var tel1 = " f/" + fr1_str.padStart(fr_width);
     tel1 += " fl=" + t1_focal_length.toFixed(0).padStart(fl_width) + "mm";
     tel1 += " D=" + t1_aperture_diameter.toFixed(0).padStart(d_width) + "mm";
     tel1 += " O=" + (100*t1_obstruction_ratio).toFixed(0).padStart(o_width) + "%";
     tel1 += " res=" + res1_str.padStart(res_width) + '"/p';
-    tel1 += " FOV=" + (t1_view_h/60).toFixed(1).padStart(fov_h1_width) + "'x" + (t1_view_v/60).toFixed(1).padStart(fov_v1_width) + "'=" + t1_t2_view_factor.toFixed(2).padStart(fov_factor_width) + "x";
-    tel1 += " eoi=" + t1_t2_extended_object_irradiance_factor.toFixed(2).padStart(eoi_width) + 'x';
-    tel1 += " poi=" + t1_t2_point_object_irradiance_factor.toFixed(2).padStart(poi_width) + 'x';
-    tel1 += " e=" + t1_t2_etendue.toFixed(2).padStart(e_width) + 'x';
-    tel1 += " pe=" + t1_t2_pixel_etendue.toFixed(2).padStart(pe_width) + 'x';
-    tel1 += " ps=" + t1_t2_pixel_signal.toFixed(2).padStart(ps_width) + 'x';
-    tel1 += " os=" + t1_t2_object_signal.toFixed(2).padStart(os_width) + 'x';
+    tel1 += " FOV=" + fov_h1_str.padStart(fov_h_width) + "'x" + fov_v1_str.padStart(fov_v_width) + "'=" + fov_factor1_str.padStart(fov_factor_width) + "x";
+    tel1 += " eoi=" + eoi1_str.padStart(eoi_width) + 'x';
+    tel1 += " poi=" + poi1_str.padStart(poi_width) + 'x';
+    tel1 += " e=" + e1_str.padStart(e_width) + 'x';
+    tel1 += " pe=" + pe1_str.padStart(pe_width) + 'x';
+    tel1 += " ps=" + ps1_str.padStart(ps_width) + 'x';
+    tel1 += " os=" + os1_str.padStart(os_width) + 'x';
 
-    var tel2 = " f/" + t2_focal_ratio.toFixed(2).padStart(fr_width);
+    var tel2 = " f/" + fr2_str.padStart(fr_width);
     tel2 += " fl=" + t2_focal_length.toFixed(0).padStart(fl_width) + "mm";
     tel2 += " D=" + t2_aperture_diameter.toFixed(0).padStart(d_width) + "mm";
     tel2 += " O=" + (100*t2_obstruction_ratio).toFixed(0).padStart(o_width) + "%";
     tel2 += " res=" + res2_str.padStart(res_width) + '"/p';
-    tel2 += " FOV=" + (t2_view_h/60).toFixed(1).padStart(fov_h1_width) + "'x" + (t2_view_v/60).toFixed(1).padStart(fov_v1_width) + "'=" + t2_t1_view_factor.toFixed(2).padStart(fov_factor_width) + "x";
-    tel2 += " eoi=" + t2_t1_extended_object_irradiance_factor.toFixed(2).padStart(eoi_width) + 'x';
-    tel2 += " poi=" + t2_t1_point_object_irradiance_factor.toFixed(2).padStart(poi_width) + 'x';
-    tel2 += " e=" + t2_t1_etendue.toFixed(2).padStart(e_width) + 'x';
-    tel2 += " pe=" + t2_t1_pixel_etendue.toFixed(2).padStart(pe_width) + 'x';
-    tel2 += " ps=" + t2_t1_pixel_signal.toFixed(2).padStart(ps_width) + 'x';
-    tel2 += " os=" + t2_t1_object_signal.toFixed(2).padStart(os_width) + 'x';
+    tel2 += " FOV=" + fov_h2_str.padStart(fov_h_width) + "'x" + fov_v2_str.padStart(fov_v_width) + "'=" + fov_factor2_str.padStart(fov_factor_width) + "x";
+    tel2 += " eoi=" + eoi2_str.padStart(eoi_width) + 'x';
+    tel2 += " poi=" + poi2_str.padStart(poi_width) + 'x';
+    tel2 += " e=" + e2_str.padStart(e_width) + 'x';
+    tel2 += " pe=" + pe2_str.padStart(pe_width) + 'x';
+    tel2 += " ps=" + ps2_str.padStart(ps_width) + 'x';
+    tel2 += " os=" + os2_str.padStart(os_width) + 'x';
 
     var python_args = "";
     python_args += (ct1.d1.value>0) ? " --d1 " +ct1.d1.value : '';
