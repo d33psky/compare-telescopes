@@ -3,6 +3,7 @@
 Compare the imaging performance of 2 telescopes for astrophotography.
 Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 
+Version 1.6 Winner highlighting with soft colors (--nocolor to disable), exclude ambiguous metrics (f-ratio, resolution)
 Version 1.5 shared JS database between Python and HTML versions, HTML telescope/camera dropdowns
 Version 1.4 add a known list of telescopes and cameras, -s and -c
 Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps
@@ -19,6 +20,29 @@ import os.path
 import sys
 
 
+def green(text, nocolor=False):
+    """Return text with soft green background if nocolor is False"""
+    # Using 256-color mode for softer colors similar to code diffs
+    # Double reset and explicit default background to prevent bleeding
+    return f'\033[48;5;194m\033[38;5;22m{text}\033[49m\033[39m\033[0m' if not nocolor else text
+
+
+def red(text, nocolor=False):
+    """Return text with soft red background if nocolor is False"""
+    # Using 256-color mode for softer colors similar to code diffs
+    # Double reset and explicit default background to prevent bleeding
+    return f'\033[48;5;224m\033[38;5;52m{text}\033[49m\033[39m\033[0m' if not nocolor else text
+
+
+def colorize_values(val1, val2, str1, str2, lower_is_better=False, nocolor=False):
+    """Return colored versions of str1 and str2 based on which value is better"""
+    if val1 == val2:
+        return str1, str2  # No coloring for ties
+    if lower_is_better:
+        return (green(str1, nocolor), red(str2, nocolor)) if val1 < val2 else (red(str1, nocolor), green(str2, nocolor))
+    else:
+        return (green(str1, nocolor), red(str2, nocolor)) if val1 > val2 else (red(str1, nocolor), green(str2, nocolor))
+
 
 class Gear():
     def __init__(self, file=None):
@@ -27,14 +51,13 @@ class Gear():
             # Get the directory where the script is located
             script_dir = os.path.dirname(os.path.realpath(__file__))
             file = os.path.join(script_dir, "telescopes-and-cameras.js")
-        
+
         print("Loading equipment data from: {}".format(file))
-        
         if not os.path.isfile(file):
             print("Error: Equipment data file '{}' not found!".format(file))
             print("Please ensure telescopes-and-cameras.js is in the same directory as compare-telescopes.py.")
             sys.exit(1)
-        
+
         # Load JavaScript file and extract data
         with open(file, 'r') as js_file:
             js_content = js_file.read()
@@ -123,6 +146,7 @@ def main():
     parser.add_argument("--formulas", action="store_true", help="Show the used formulas")
     parser.add_argument("--list", action="store_true", help="Print list of known telescopes and cameras")
     parser.add_argument("--json", action="store_true", help="Print list of known telescopes and cameras as json")
+    parser.add_argument("--nocolor", action="store_true", help="Disable colored output")
 
     parser.add_argument("--s1", required=False, type=str, help="Scope 1")
     parser.add_argument("--d1", required=False, type=float, help="Telescope 1 aperture Diameter [mm]")
@@ -423,37 +447,90 @@ def main():
         ps1_str, ps2_str, ps_width = format_with_precision(t1_t2_pixel_signal, t2_t1_pixel_signal, 2, 0.1, 0.005)
         os1_str, os2_str, os_width = format_with_precision(t1_t2_object_signal, t2_t1_object_signal, 2, 0.1, 0.005)
 
+        # Format aperture and obstruction values
+        d1_str = '{:.0f}'.format(t1_aperture_diameter)
+        d2_str = '{:.0f}'.format(t2_aperture_diameter)
+        o1_str = '{:.0f}'.format(100 * t1_obstruction_ratio)
+        o2_str = '{:.0f}'.format(100 * t2_obstruction_ratio)
+
         # Build telescope output lines with proper alignment
+        # Apply padding first, then coloring
+        fr1_padded = fr1_str.rjust(fr_width)
+        fr2_padded = fr2_str.rjust(fr_width)
+        # No coloring for f-ratio - too ambiguous
+        fr1_colored, fr2_colored = fr1_padded, fr2_padded
+
+        d1_padded = d1_str.rjust(d_width)
+        d2_padded = d2_str.rjust(d_width)
+        d1_colored, d2_colored = colorize_values(t1_aperture_diameter, t2_aperture_diameter, d1_padded, d2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        o1_padded = o1_str.rjust(o_width)
+        o2_padded = o2_str.rjust(o_width)
+        o1_colored, o2_colored = colorize_values(t1_obstruction_ratio, t2_obstruction_ratio, o1_padded, o2_padded, lower_is_better=True, nocolor=args.nocolor)
+
+        res1_padded = res1_str.rjust(res_width)
+        res2_padded = res2_str.rjust(res_width)
+        # No coloring for resolution - too ambiguous
+        res1_colored, res2_colored = res1_padded, res2_padded
+
+        fov_factor1_padded = fov_factor1_str.rjust(fov_factor_width)
+        fov_factor2_padded = fov_factor2_str.rjust(fov_factor_width)
+        fov_factor1_colored, fov_factor2_colored = colorize_values(t1_t2_view_factor, t2_t1_view_factor, fov_factor1_padded, fov_factor2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        eoi1_padded = eoi1_str.rjust(eoi_width)
+        eoi2_padded = eoi2_str.rjust(eoi_width)
+        eoi1_colored, eoi2_colored = colorize_values(t1_t2_extended_object_irradiance_factor, t2_t1_extended_object_irradiance_factor, eoi1_padded, eoi2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        poi1_padded = poi1_str.rjust(poi_width)
+        poi2_padded = poi2_str.rjust(poi_width)
+        poi1_colored, poi2_colored = colorize_values(t1_t2_point_object_irradiance_factor, t2_t1_point_object_irradiance_factor, poi1_padded, poi2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        e1_padded = e1_str.rjust(e_width)
+        e2_padded = e2_str.rjust(e_width)
+        e1_colored, e2_colored = colorize_values(t1_t2_etendue, t2_t1_etendue, e1_padded, e2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        pe1_padded = pe1_str.rjust(pe_width)
+        pe2_padded = pe2_str.rjust(pe_width)
+        pe1_colored, pe2_colored = colorize_values(t1_t2_pixel_etendue, t2_t1_pixel_etendue, pe1_padded, pe2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        ps1_padded = ps1_str.rjust(ps_width)
+        ps2_padded = ps2_str.rjust(ps_width)
+        ps1_colored, ps2_colored = colorize_values(t1_t2_pixel_signal, t2_t1_pixel_signal, ps1_padded, ps2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        os1_padded = os1_str.rjust(os_width)
+        os2_padded = os2_str.rjust(os_width)
+        os1_colored, os2_colored = colorize_values(t1_t2_object_signal, t2_t1_object_signal, os1_padded, os2_padded, lower_is_better=False, nocolor=args.nocolor)
+
         line1_parts = [
             'Telescope 1',
-            'f/{:>{}}'.format(fr1_str, fr_width),
+            'f/{}'.format(fr1_colored),
             'fl={:>{}.0f}mm'.format(t1_focal_length, fl_width),
-            'D={:>{}.0f}mm'.format(t1_aperture_diameter, d_width),
-            'O={:>{}.0f}%'.format(100 * t1_obstruction_ratio, o_width),
-            'res={:>{}}\"/p'.format(res1_str, res_width),
-            'FOV={:>{}}\'x{:>{}}\'={:>{}}x'.format(fov_h1_str, fov_h_width, fov_v1_str, fov_v_width, fov_factor1_str, fov_factor_width),
-            'eoi={:>{}}x'.format(eoi1_str, eoi_width),
-            'poi={:>{}}x'.format(poi1_str, poi_width),
-            'e={:>{}}x'.format(e1_str, e_width),
-            'pe={:>{}}x'.format(pe1_str, pe_width),
-            'ps={:>{}}x'.format(ps1_str, ps_width),
-            'os={:>{}}x'.format(os1_str, os_width)
+            'D={}mm'.format(d1_colored),
+            'O={}%'.format(o1_colored),
+            'res={}\"/p'.format(res1_colored),
+            'FOV={:>{}}\'x{:>{}}\'={}x'.format(fov_h1_str, fov_h_width, fov_v1_str, fov_v_width, fov_factor1_colored),
+            'eoi={}x'.format(eoi1_colored),
+            'poi={}x'.format(poi1_colored),
+            'e={}x'.format(e1_colored),
+            'pe={}x'.format(pe1_colored),
+            'ps={}x'.format(ps1_colored),
+            'os={}x'.format(os1_colored)
         ]
 
         line2_parts = [
             'Telescope 2',
-            'f/{:>{}}'.format(fr2_str, fr_width),
+            'f/{}'.format(fr2_colored),
             'fl={:>{}.0f}mm'.format(t2_focal_length, fl_width),
-            'D={:>{}.0f}mm'.format(t2_aperture_diameter, d_width),
-            'O={:>{}.0f}%'.format(100 * t2_obstruction_ratio, o_width),
-            'res={:>{}}\"/p'.format(res2_str, res_width),
-            'FOV={:>{}}\'x{:>{}}\'={:>{}}x'.format(fov_h2_str, fov_h_width, fov_v2_str, fov_v_width, fov_factor2_str, fov_factor_width),
-            'eoi={:>{}}x'.format(eoi2_str, eoi_width),
-            'poi={:>{}}x'.format(poi2_str, poi_width),
-            'e={:>{}}x'.format(e2_str, e_width),
-            'pe={:>{}}x'.format(pe2_str, pe_width),
-            'ps={:>{}}x'.format(ps2_str, ps_width),
-            'os={:>{}}x'.format(os2_str, os_width)
+            'D={}mm'.format(d2_colored),
+            'O={}%'.format(o2_colored),
+            'res={}\"/p'.format(res2_colored),
+            'FOV={:>{}}\'x{:>{}}\'={}x'.format(fov_h2_str, fov_h_width, fov_v2_str, fov_v_width, fov_factor2_colored),
+            'eoi={}x'.format(eoi2_colored),
+            'poi={}x'.format(poi2_colored),
+            'e={}x'.format(e2_colored),
+            'pe={}x'.format(pe2_colored),
+            'ps={}x'.format(ps2_colored),
+            'os={}x'.format(os2_colored)
         ]
 
         print(' '.join(line1_parts))

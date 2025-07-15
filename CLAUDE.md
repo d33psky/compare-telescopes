@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Compare Telescopes is a specialized astrophotography tool that compares the imaging performance of two telescopes across 8 key performance indicators: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps), and object signal (os).
 
-The project has dual interfaces - a Python CLI tool and a web-based HTML version that provide identical functionality.
+The project has dual interfaces - a Python CLI tool and a web-based HTML version that provide identical functionality, including winner highlighting for easier comparison.
 
 ## Key Architecture
 
@@ -35,13 +35,17 @@ python3 compare-telescopes.py --d1 100 --f1 6 --d2 80 --f2 7 --detail
 
 # Show formulas and mathematical explanations
 python3 compare-telescopes.py --formulas
+
+# Disable color highlighting
+python3 compare-telescopes.py --d1 100 --f1 6 --d2 80 --f2 7 --nocolor
 ```
 
 **Output Modes:**
-- Default: Brief comparison with ratios
+- Default: Brief comparison with ratios and color highlighting
 - `--detail`: Full calculations with units and explanations
 - `--just_numbers`: Numeric output only
 - `--formulas`: Mathematical formulas and theory
+- `--nocolor`: Disable winner/loser color highlighting
 
 ## Development Notes
 
@@ -49,6 +53,15 @@ python3 compare-telescopes.py --formulas
 - Pure Python 3 with only standard library dependencies
 - No build system required - direct script execution
 - HTML/JavaScript web version mirrors CLI functionality
+
+**Winner Highlighting (v1.6):**
+- Soft background colors (similar to code diffs) indicate better performance
+- Green background: winning value
+- Red background: losing value
+- No highlighting for ambiguous metrics (f-ratio, resolution) where "better" depends on use case
+- No highlighting for focal length (neutral specification)
+- Python: ANSI color codes with proper terminal reset sequences
+- HTML: CSS classes with subtle background colors
 
 **Parameter Validation:**
 - Only 2 of 3 optical parameters (aperture, focal length, focal ratio) can be specified
