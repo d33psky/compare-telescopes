@@ -3,6 +3,8 @@
 Compare the imaging performance of 2 telescopes for astrophotography.
 Performance indicators are: pixel scale (res), FOV, extended object irradiance (eoi), point object irradiance (poi), etendue (e), pixel etendue (pe), pixel signal (ps) and object signal (os).
 
+Version 1.6 Winner highlighting with soft colors (--nocolor to disable), exclude ambiguous metrics (f-ratio, resolution)
+Version 1.5 shared JS database between Python and HTML versions, HTML telescope/camera dropdowns
 Version 1.4 add a known list of telescopes and cameras, -s and -c
 Version 1.3 add ObjectSignal as os, rename et->e pet->pe, psi->ps
 Version 1.2 add defaults for aperture diameter, focal length, focal ratio
@@ -17,163 +19,67 @@ import json
 import os.path
 import sys
 
-default_json_data = """
-{
-    "scopes": {
-        "63ed": { "manufacturer": "Celestron","d": 63.5, "l": 381 },
-        "ED80": { "d": 80, "l": 600 },
-        "GT81": { "d": 81, "l": 478 },
-        "ESPRIT100": { "d": 100, "f": 5.5 },
-        "ESPRIT150": { "d": 150, "f": 7 },
-        "APO130": { "d": 130, "l": 650 },
-        "ZWOFF107": { "d": 107, "l": 749 },
-        "TS-photoline-130": { "d": 130, "l": 910 },
-        "TSED102F7": { "d": 102, "l": 714 },
-        "SV102ED": { "d": 102, "l": 710 },
-        "TOA150B": { "d": 150, "l": 1100 },
-        "Sharpstar-15028HNT": { "d": 150, "l": 420, "o": 0.47 },
-        "APMLZOS152": { "d": 152, "l": 1200 },
-        "TEC140": { "d": 140, "l": 980 },
-        "epsilon-180ED": { "d": 180, "f": 2.8 },
-        "BS10ED": { "di": 10, "l": 711, "o": 0.35 },
-        "BS12ED": { "di": 12, "l": 854, "o": 0.34 },
-        "AGOiDK10": { "d": 254, "l": 1674, "o": 0.56 },
-        "AGOiDK12.5": { "d": 318, "l": 2128, "o": 0.54 },
-        "AGOiDK14.5": { "d": 368, "l": 2464, "o": 0.52 },
-        "AGOiDK17": { "d": 432, "l": 2884, "o": 0.49 },
-        "AGOiDK20": { "d": 508, "l": 3403, "o": 0.48 },
-        "dream16_3.75": { "di": 16, "f": 3.75, "o": 0.375 },
-        "MN-152": { "manufacturer": "Explore Scientific", "alias1": "MN6", "type": "Maksutov-Newton", "d": 152, "f": 5, "o": 0.32 },
-        "CDK12.5": { "d": 318, "l": 2541, "o": 0.37 },
-        "CDK14": { "d": 356, "l": 2563, "o": 0.24 },
-        "ODK14": { "d": 350, "l": 2380, "o": 0.39 },
-        "CDK17": { "d": 432, "l": 2939, "o": 0.24 },
-        "CDK20f7.77": { "d": 508, "l": 3951, "o": 0.15 },
-        "CDK20f6.8": { "d": 508, "l": 3454, "o": 0.15 },
-        "CDK24": { "d": 610, "l": 3974, "o": 0.22 },
-        "C8": { "di": 8, "f": 10, "o": 0.39 },
-        "C8-H3": { "di": 8, "l": 425, "o": 0.39 },
-        "C8-H4": { "di": 8, "l": 390, "o": 0.39 },
-        "C9.25": { "di": 9.25, "f": 10, "o": 0.36 },
-        "C11": { "di": 11, "f": 10, "o": 0.34 },
-        "C14": { "di": 14, "f": 10, "o": 0.32 },
-        "C14-H4": { "di": 14, "l": 715, "o": 0.32 },
-        "APT-CS-6RC": { "d": 150, "l": 1377, "o": 0.50 },
-        "AT6RC": { "di": 6, "l": 1370, "o": 0.50 },
-        "AT8RC": { "di": 8, "l": 1625, "o": 0.47 },
-        "AT10RC": { "di": 10, "l": 2000, "o": 0.43 },
-        "TSRC8": { "d": 203, "l": 1624, "o": 0.42 },
-        "GSRC10": { "d": 254, "l": 2000, "o": 0.44 },
-        "GSRC12": { "d": 304, "l": 2432, "o": 0.49 },
-        "GSRC14": { "di": 14, "l": 2854, "o": 0.5 },
-        "LX200-8f10": { "di": 8, "f": 10, "o": 0.38 },
-        "LX200-10f10": { "di": 10, "f": 10, "o": 0.37 },
-        "LX200-14f10": { "di": 14, "f": 10, "o": 0.32 },
-        "ACF10f8": { "di": 10, "f": 8, "o": 0.47 },
-        "ACF12f8": { "di": 12, "f": 8, "o": 0.41 },
-        "ACF14f8": { "di": 14, "f": 8, "o": 0.36 },
-        "SWE250PDS": { "d": 250, "l": 1200, "o": 0.25 },
-        "MEWLON180": { "d": 180, "l": 2160, "o": 0.3 },
-        "ONTC808": { "d": 203, "l": 800, "o": 0.36 },
-        "ONTC1010": { "d": 254, "l": 1000, "o": 0.31 },
-        "ONTC1212": { "d": 303, "l": 1200, "o": 0.29 },
-        "RH200": { "d": 200, "l": 600, "o": 0.55 },
-        "RH305": { "d": 305, "l": 1159, "o": 0.24 },
-        "RASA8": { "di": 8, "l": 400, "o": 0.46 },
-        "RASA11": { "di": 11, "l": 620, "o": 0.50 },
-        "HUBBLE": { "d": 2400, "l": 57600, "o": 0.127, "t": 0.85 },
-        "EUCLID": { "d": 1200, "l": 24500, "o": 0.0, "t": 0.0 },
-        "ELT": { "d": 39300, "l": 743400, "o": 0.104 },
-        "VLT": { "d": 8200,  "l": 120000, "o": 0.136 },
-        "GTC": { "d": 10400,  "l": 169900, "o": 0.115 },
-        "KECK_p": { "d": 10000,  "l": 17500 },
-        "KECK_sf15": { "d": 10000,  "l": 149600, "o": 0.145 },
-        "KECK_sf25": { "d": 10000,  "l": 249700, "o": 0.050 },
-        "KECK_sf40": { "d": 10000,  "l": 395000, "o": 0.050 },
-        "TMT": { "d": 30000,  "l": 450000, "o": 0.103 }
-    },
-    "cameras": {
-        "SPC900NC": { "h": 640, "v": 480, "p": 5.6, "q": 0.38 },
-        "ASI178": { "m": "ZWO", "s": "IMX178", "sm": "Sony", "h": 3096, "v": 2080, "p": 2.4, "q": 0.81 },
-        "ASI174": { "m": "ZWO", "s": "IMX174", "sm": "Sony", "h": 1936, "v": 1216, "p": 5.86, "q": 0.70 },
-        "ASI071": { "h": 4944, "v": 3284, "p": 4.79, "q": 0.50 },
-        "ASI120": { "h": 1280, "v": 960, "p": 3.75, "q": 0.80 },
-        "ASI1600": { "m": "ZWO", "s": "PMN34230", "sm": "Panasonic", "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
-        "ASI183": { "h": 5496, "v": 3672, "p": 2.40, "q": 0.84 },
-        "ASI224": { "h": 1304, "v": 976, "p": 3.75, "q": 0.75 },
-        "ASI290": { "h": 1936, "v": 1096, "p": 2.9, "q": 0.8 },
-        "ASI2400mc": { "m": "ZWO", "s": "IMX410", "sm": "Sony", "h": 6072, "v": 4042, "p": 5.94, "q": 0.8 },
-        "ASI2600mc": { "m": "ZWO", "s": "IMX571", "sm": "Sony", "h": 6248, "v": 4176, "p": 3.76, "q": 0.8 },
-        "ASI2600mm": { "m": "ZWO", "s": "IMX571", "sm": "Sony", "h": 6248, "v": 4176, "p": 3.76, "q": 0.91 },
-        "ASI294mc": { "m": "ZWO", "s": "IMX294", "sm": "Sony", "h": 4144, "v": 2822, "p": 4.63, "q": 0.75 },
-        "ASI294mm-bin1": { "m": "ZWO", "s": "IMX294", "sm": "Sony", "h": 8288, "v": 5644, "p": 2.3, "q": 0.90 },
-        "ASI294mm": { "m": "ZWO", "s": "IMX294", "sm": "Sony", "h": 4144, "v": 2822, "p": 4.63, "q": 0.90 },
-        "ASI294": { "h": 4144, "v": 2822, "p": 4.63, "q": 0.75 },
-        "ASI385": { "h": 1936, "v": 1096, "p": 3.75, "q": 0.80 },
-        "ASI461": { "h": 11656, "v": 8750, "p": 3.76, "q": 0.91 },
-        "ASI462": { "h": 1936, "v": 1096, "p": 2.9, "q": 0.9 },
-        "ASI533mc": { "m": "ZWO", "s": "IMX533", "sm": "Sony", "h": 3008, "v": 3008, "p": 3.76, "q": 0.80 },
-        "ASI533mm": { "m": "ZWO", "s": "IMX533", "sm": "Sony", "h": 3008, "v": 3008, "p": 3.76, "q": 0.91 },
-        "ASI585": { "m": "ZWO", "s": "IMX585", "sm": "Sony", "h": 3840, "v": 2160, "p": 2.9, "q": 0.91 },
-        "ASI991": { "m": "ZWO", "s": "IMX991", "sm": "Sony", "h": 656, "v": 520, "p": 5.0, "q": 0.80 },
-        "ASI6200": { "m": "ZWO", "s": "IMX455", "sm": "Sony", "h": 9576, "v": 6388, "p": 3.76, "q": 0.91 },
-        "ASI715": { "h": 3864, "v": 2192, "p": 1.45, "q": 0.80 },
-        "ATIK11000": { "h": 4007, "v": 2671, "p": 9.0, "q": 0.5 },
-        "ATIK4000": { "h": 2047, "v": 2047, "p": 7.4, "q": 0.55 },
-        "KAI11002": { "h": 4008, "v": 2672, "p": 9.0, "q": 0.5 },
-        "ATIK16200": { "h": 4499, "v": 3599, "p": 6.0, "q": 0.6 },
-        "ATIK383": { "h": 3354, "v": 2529, "p": 5.4, "q": 0.56 },
-        "ATIKONE6": { "h": 2749, "v": 2199, "p": 4.54, "q": 0.66 },
-        "ATIKONE9": { "h": 3380, "v": 2704, "p": 3.69, "q": 0.77 },
-        "AtikHorizonII": { "h": 4656, "v": 3520, "p": 3.8, "q": 0.60 },
-        "EOS40D": { "h": 3888, "v": 2592, "p": 5.7, "q": 0.33 },
-        "EOS500D": { "h": 4752 , "v": 3168 , "p": 4.68, "q": 0.38 },
-        "EOS550D": { "h": 5184 , "v": 3456, "p": 4.29, "q": 0.4 },
-        "EOS70D": { "h": 5472, "v": 3648, "p": 4.1, "q": 0.48 },
-        "EOS6D": { "h": 5472, "v": 3648, "p": 6.54, "q": 0.5 },
-        "EOSRa": { "h": 6720, "v": 4480, "p": 5.36, "q": 0.51 },
-        "D5300": { "h": 6000, "v": 4000, "p": 3.92, "q": 0.55 },
-        "D5600": { "h": 6000, "v": 4000, "p": 3.92, "q": 0.52 },
-        "D610": { "m": "Nikon", "h": 6016, "v": 4016, "p":  5.95, "q": 0.49 },
-        "KAF3200ME": { "h": 2184, "v": 1472, "p": 6.8, "q": 0.85 },
-        "KAF8300": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.56 },
-        "QSI683": { "h": 3326, "v": 2504, "p": 5.4, "q": 0.57 },
-        "QSI6120": { "m": "QSI", "s": "ICX834", "sm": "Sony", "h": 4250, "v": 2838, "p": 3.1, "q": 0.77 },
-        "KAF16803": { "h": 4096, "v": 4096, "p": 9.0, "q": 0.6 },
-        "KL4040": { "m": "FLI", "s": "GSense4040", "sm": "GPixel", "h": 4096, "v": 4096, "p": 9.0, "q": 0.74 },
-        "QHY163": { "h": 4656, "v": 3522, "p": 3.8, "q": 0.6 },
-        "QHY183": { "h": 5544, "v": 3694, "p": 2.4, "q": 0.84 },
-        "QHY268M": { "m": "QHY", "sm": "Sony", "s": "IMX571", "h": 6280, "v": 4210, "p": 3.76, "q": 0.9 },
-        "QHY23": { "h": 3468, "v": 2728, "p": 3.69, "q": 0.8 },
-        "ST10XME": { "m": "SBIG", "h": 2184, "v": 1472, "p": 6.8, "q": 0.5 },
-        "SX694": { "h": 2750, "v": 2200, "p": 4.54, "q": 0.77 },
-        "SONYA7S": { "h": 4240, "v": 2832, "p": 8.4, "q": 0.65 },
-        "IMX511": { "h": 5215, "v": 4927, "p": 1.12, "q": 0.8 },
-        "HAWAII-4RG": { "h": 4096, "v": 4096, "p": 15, "q": 0.70 },
-        "ACS": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.09 },
-        "WFC3": { "h": 4096, "v": 4096, "p": 15, "q": 0.9, "r": 1.354 },
-        "EUCLID-VIS": { "h": 24576, "v": 24792, "p": 12, "q": 0.9 }
-    }
-}
-"""
+
+def green(text, nocolor=False):
+    """Return text with soft green background if nocolor is False"""
+    # Using 256-color mode for softer colors similar to code diffs
+    # Double reset and explicit default background to prevent bleeding
+    return f'\033[48;5;194m\033[38;5;22m{text}\033[49m\033[39m\033[0m' if not nocolor else text
+
+
+def red(text, nocolor=False):
+    """Return text with soft red background if nocolor is False"""
+    # Using 256-color mode for softer colors similar to code diffs
+    # Double reset and explicit default background to prevent bleeding
+    return f'\033[48;5;224m\033[38;5;52m{text}\033[49m\033[39m\033[0m' if not nocolor else text
+
+
+def colorize_values(val1, val2, str1, str2, lower_is_better=False, nocolor=False):
+    """Return colored versions of str1 and str2 based on which value is better"""
+    if val1 == val2:
+        return str1, str2  # No coloring for ties
+    if lower_is_better:
+        return (green(str1, nocolor), red(str2, nocolor)) if val1 < val2 else (red(str1, nocolor), green(str2, nocolor))
+    else:
+        return (green(str1, nocolor), red(str2, nocolor)) if val1 > val2 else (red(str1, nocolor), green(str2, nocolor))
 
 
 class Gear():
     def __init__(self, file=None):
-        print("file {}".format(file))
-        self.file_data = None
-        self.default_data = json.loads(default_json_data)
-        if os.path.isfile(file):
-            with open(file) as json_file:
-                self.file_data = json.load(json_file)
-        self.scopes = {x.lower(): y for x, y in {**self.file_data['scopes'], **self.default_data['scopes']}.items()}
-        self.cameras = {x.lower(): y for x, y in {**self.file_data['cameras'], **self.default_data['cameras']}.items()}
+        # Use JS file as single source of truth
+        if file is None:
+            # Get the directory where the script is located
+            script_dir = os.path.dirname(os.path.realpath(__file__))
+            file = os.path.join(script_dir, "telescopes-and-cameras.js")
+
+        print("Loading equipment data from: {}".format(file))
+        if not os.path.isfile(file):
+            print("Error: Equipment data file '{}' not found!".format(file))
+            print("Please ensure telescopes-and-cameras.js is in the same directory as compare-telescopes.py.")
+            sys.exit(1)
+
+        # Load JavaScript file and extract data
+        with open(file, 'r') as js_file:
+            js_content = js_file.read()
+            # Extract the data from the JavaScript variable
+            start = js_content.find('{')
+            end = js_content.rfind('}') + 1
+            if start != -1 and end != 0:
+                data_str = js_content[start:end]
+                try:
+                    self.file_data = json.loads(data_str)
+                    self.scopes = {x.lower(): y for x, y in self.file_data['scopes'].items()}
+                    self.cameras = {x.lower(): y for x, y in self.file_data['cameras'].items()}
+                except json.JSONDecodeError as e:
+                    print("Error: Could not parse data from JS file '{}': {}".format(file, e))
+                    sys.exit(1)
+            else:
+                print("Error: Could not extract data from JS file '{}'.".format(file))
+                print("The file format may be incorrect.")
+                sys.exit(1)
 
     def list_scopes_and_cameras(self, as_json=None):
         if as_json:
-            print('Default data:')
-            print(json.dumps(self.default_data, indent=4, sort_keys=True))
-            print('Custom data:')
             print(json.dumps(self.file_data, indent=4, sort_keys=True))
         else:
             for name in sorted(self.scopes.items()) + sorted(self.cameras.items()):
@@ -240,6 +146,7 @@ def main():
     parser.add_argument("--formulas", action="store_true", help="Show the used formulas")
     parser.add_argument("--list", action="store_true", help="Print list of known telescopes and cameras")
     parser.add_argument("--json", action="store_true", help="Print list of known telescopes and cameras as json")
+    parser.add_argument("--nocolor", action="store_true", help="Disable colored output")
 
     parser.add_argument("--s1", required=False, type=str, help="Scope 1")
     parser.add_argument("--d1", required=False, type=float, help="Telescope 1 aperture Diameter [mm]")
@@ -278,8 +185,8 @@ def main():
         print_formulas()
         sys.exit(0)
     if args.s1 or args.c1 or args.s2 or args.c2 or args.list or args.json:
-        path = os.path.dirname(os.path.realpath(sys.argv[0]))
-        gear = Gear(file="{}/telescopes-and-cameras.json".format(path))
+        # Let Gear class find the JS file automatically
+        gear = Gear()
     if args.list or args.json:
         gear.list_scopes_and_cameras(args.json)
         sys.exit(0)
@@ -469,18 +376,165 @@ def main():
     t2_t1_object_signal = t2_aperture_area / t1_aperture_area * c2_q / c1_q * t2_transmittance_factor / t1_transmittance_factor
 
     if args.brief or not args.detail:
-        print(
-            'Telescope 1 f/{:<5.2f} l={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x e={:5.2f}x pe={:5.2f}x ps={:5.2f}x os={:5.2f}x'.format(
-                t1_focal_ratio, t1_focal_length, t1_aperture_diameter, 100 * t1_obstruction_ratio, t1_arcsec_p,
-                                                                       t1_view_h / 60, t1_view_v / 60,
-                t1_t2_view_factor, t1_t2_extended_object_irradiance_factor, t1_t2_point_object_irradiance_factor,
-                t1_t2_etendue, t1_t2_pixel_etendue, t1_t2_pixel_signal, t1_t2_object_signal))
-        print(
-            'Telescope 2 f/{:<5.2f} l={:4.0f}mm D={:3.0f}mm O={:2.0f}% res={:3.2f}"/p FOV={:2.0f}\'x{:2.0f}\'={:5.2f}x eoi={:5.2f}x poi={:5.2f}x e={:5.2f}x pe={:5.2f}x ps={:5.2f}x os={:5.2f}x'.format(
-                t2_focal_ratio, t2_focal_length, t2_aperture_diameter, 100 * t2_obstruction_ratio, t2_arcsec_p,
-                                                                       t2_view_h / 60, t2_view_v / 60,
-                t2_t1_view_factor, t2_t1_extended_object_irradiance_factor, t2_t1_point_object_irradiance_factor,
-                t2_t1_etendue, t2_t1_pixel_etendue, t2_t1_pixel_signal, t2_t1_object_signal))
+        # Calculate field widths dynamically based on actual values
+        # For focal ratio
+        fr_width = max(len('{:.2f}'.format(t1_focal_ratio)), len('{:.2f}'.format(t2_focal_ratio)))
+        # For focal length
+        fl_width = max(len('{:.0f}'.format(t1_focal_length)), len('{:.0f}'.format(t2_focal_length)))
+        # For diameter
+        d_width = max(len('{:.0f}'.format(t1_aperture_diameter)), len('{:.0f}'.format(t2_aperture_diameter)))
+        # For obstruction percentage
+        o_width = max(len('{:.0f}'.format(100 * t1_obstruction_ratio)), len('{:.0f}'.format(100 * t2_obstruction_ratio)))
+        # For resolution - adjust precision based on value magnitude
+        if t1_arcsec_p < 0.1 or t2_arcsec_p < 0.1:
+            res1_str = '{:.3f}'.format(t1_arcsec_p) if t1_arcsec_p < 0.1 else '{:.2f}'.format(t1_arcsec_p)
+            res2_str = '{:.3f}'.format(t2_arcsec_p) if t2_arcsec_p < 0.1 else '{:.2f}'.format(t2_arcsec_p)
+            res_width = max(len(res1_str), len(res2_str))
+        else:
+            res_width = max(len('{:.2f}'.format(t1_arcsec_p)), len('{:.2f}'.format(t2_arcsec_p)))
+        # For FOV values
+        fov_h1_width = max(len('{:.1f}'.format(t1_view_h / 60)), len('{:.1f}'.format(t2_view_h / 60)))
+        fov_v1_width = max(len('{:.1f}'.format(t1_view_v / 60)), len('{:.1f}'.format(t2_view_v / 60)))
+        # For comparison factors
+        fov_factor_width = max(len('{:.2f}'.format(t1_t2_view_factor)), len('{:.2f}'.format(t2_t1_view_factor)))
+        eoi_width = max(len('{:.2f}'.format(t1_t2_extended_object_irradiance_factor)), len('{:.2f}'.format(t2_t1_extended_object_irradiance_factor)))
+        poi_width = max(len('{:.2f}'.format(t1_t2_point_object_irradiance_factor)), len('{:.2f}'.format(t2_t1_point_object_irradiance_factor)))
+        e_width = max(len('{:.2f}'.format(t1_t2_etendue)), len('{:.2f}'.format(t2_t1_etendue)))
+        pe_width = max(len('{:.2f}'.format(t1_t2_pixel_etendue)), len('{:.2f}'.format(t2_t1_pixel_etendue)))
+        ps_width = max(len('{:.2f}'.format(t1_t2_pixel_signal)), len('{:.2f}'.format(t2_t1_pixel_signal)))
+        os_width = max(len('{:.2f}'.format(t1_t2_object_signal)), len('{:.2f}'.format(t2_t1_object_signal)))
+
+        # Helper function to format values with aligned decimal points
+        def format_with_precision(val1, val2, default_precision=2, small_threshold=0.1, zero_threshold=0.005):
+            """Format two values ensuring decimal points align and no false zeros."""
+            # Determine precision needed
+            if val1 < small_threshold or val2 < small_threshold:
+                precision = 3
+            else:
+                precision = default_precision
+
+            # Format both values with same precision
+            str1 = '{{:.{}f}}'.format(precision).format(val1)
+            str2 = '{{:.{}f}}'.format(precision).format(val2)
+
+            # Check if either rounds to zero and increase precision if needed
+            while (float(str1) == 0 and val1 > zero_threshold) or (float(str2) == 0 and val2 > zero_threshold):
+                precision += 1
+                str1 = '{{:.{}f}}'.format(precision).format(val1)
+                str2 = '{{:.{}f}}'.format(precision).format(val2)
+
+            return str1, str2, max(len(str1), len(str2))
+
+        # Build format strings with dynamic widths
+        # Format all values with proper decimal alignment
+        res1_str, res2_str, res_width = format_with_precision(t1_arcsec_p, t2_arcsec_p, 2, 0.1, 0.005)
+
+        # Format focal ratios with same precision
+        fr1_str = '{:.2f}'.format(t1_focal_ratio)
+        fr2_str = '{:.2f}'.format(t2_focal_ratio)
+        fr_width = max(len(fr1_str), len(fr2_str))
+
+        # Format FOV values
+        fov_h1_str, fov_h2_str, fov_h_width = format_with_precision(t1_view_h / 60, t2_view_h / 60, 1, 1.0, 0.05)
+        fov_v1_str, fov_v2_str, fov_v_width = format_with_precision(t1_view_v / 60, t2_view_v / 60, 1, 1.0, 0.05)
+
+        # Format comparison factors
+        fov_factor1_str, fov_factor2_str, fov_factor_width = format_with_precision(t1_t2_view_factor, t2_t1_view_factor, 2, 0.1, 0.005)
+        eoi1_str, eoi2_str, eoi_width = format_with_precision(t1_t2_extended_object_irradiance_factor, t2_t1_extended_object_irradiance_factor, 2, 0.1, 0.005)
+        poi1_str, poi2_str, poi_width = format_with_precision(t1_t2_point_object_irradiance_factor, t2_t1_point_object_irradiance_factor, 2, 0.1, 0.005)
+        e1_str, e2_str, e_width = format_with_precision(t1_t2_etendue, t2_t1_etendue, 2, 0.1, 0.005)
+        pe1_str, pe2_str, pe_width = format_with_precision(t1_t2_pixel_etendue, t2_t1_pixel_etendue, 2, 0.1, 0.005)
+        ps1_str, ps2_str, ps_width = format_with_precision(t1_t2_pixel_signal, t2_t1_pixel_signal, 2, 0.1, 0.005)
+        os1_str, os2_str, os_width = format_with_precision(t1_t2_object_signal, t2_t1_object_signal, 2, 0.1, 0.005)
+
+        # Format aperture and obstruction values
+        d1_str = '{:.0f}'.format(t1_aperture_diameter)
+        d2_str = '{:.0f}'.format(t2_aperture_diameter)
+        o1_str = '{:.0f}'.format(100 * t1_obstruction_ratio)
+        o2_str = '{:.0f}'.format(100 * t2_obstruction_ratio)
+
+        # Build telescope output lines with proper alignment
+        # Apply padding first, then coloring
+        fr1_padded = fr1_str.rjust(fr_width)
+        fr2_padded = fr2_str.rjust(fr_width)
+        # No coloring for f-ratio - too ambiguous
+        fr1_colored, fr2_colored = fr1_padded, fr2_padded
+
+        d1_padded = d1_str.rjust(d_width)
+        d2_padded = d2_str.rjust(d_width)
+        d1_colored, d2_colored = colorize_values(t1_aperture_diameter, t2_aperture_diameter, d1_padded, d2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        o1_padded = o1_str.rjust(o_width)
+        o2_padded = o2_str.rjust(o_width)
+        o1_colored, o2_colored = colorize_values(t1_obstruction_ratio, t2_obstruction_ratio, o1_padded, o2_padded, lower_is_better=True, nocolor=args.nocolor)
+
+        res1_padded = res1_str.rjust(res_width)
+        res2_padded = res2_str.rjust(res_width)
+        # No coloring for resolution - too ambiguous
+        res1_colored, res2_colored = res1_padded, res2_padded
+
+        fov_factor1_padded = fov_factor1_str.rjust(fov_factor_width)
+        fov_factor2_padded = fov_factor2_str.rjust(fov_factor_width)
+        fov_factor1_colored, fov_factor2_colored = colorize_values(t1_t2_view_factor, t2_t1_view_factor, fov_factor1_padded, fov_factor2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        eoi1_padded = eoi1_str.rjust(eoi_width)
+        eoi2_padded = eoi2_str.rjust(eoi_width)
+        eoi1_colored, eoi2_colored = colorize_values(t1_t2_extended_object_irradiance_factor, t2_t1_extended_object_irradiance_factor, eoi1_padded, eoi2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        poi1_padded = poi1_str.rjust(poi_width)
+        poi2_padded = poi2_str.rjust(poi_width)
+        poi1_colored, poi2_colored = colorize_values(t1_t2_point_object_irradiance_factor, t2_t1_point_object_irradiance_factor, poi1_padded, poi2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        e1_padded = e1_str.rjust(e_width)
+        e2_padded = e2_str.rjust(e_width)
+        e1_colored, e2_colored = colorize_values(t1_t2_etendue, t2_t1_etendue, e1_padded, e2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        pe1_padded = pe1_str.rjust(pe_width)
+        pe2_padded = pe2_str.rjust(pe_width)
+        pe1_colored, pe2_colored = colorize_values(t1_t2_pixel_etendue, t2_t1_pixel_etendue, pe1_padded, pe2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        ps1_padded = ps1_str.rjust(ps_width)
+        ps2_padded = ps2_str.rjust(ps_width)
+        ps1_colored, ps2_colored = colorize_values(t1_t2_pixel_signal, t2_t1_pixel_signal, ps1_padded, ps2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        os1_padded = os1_str.rjust(os_width)
+        os2_padded = os2_str.rjust(os_width)
+        os1_colored, os2_colored = colorize_values(t1_t2_object_signal, t2_t1_object_signal, os1_padded, os2_padded, lower_is_better=False, nocolor=args.nocolor)
+
+        line1_parts = [
+            'Telescope 1',
+            'f/{}'.format(fr1_colored),
+            'fl={:>{}.0f}mm'.format(t1_focal_length, fl_width),
+            'D={}mm'.format(d1_colored),
+            'O={}%'.format(o1_colored),
+            'res={}\"/p'.format(res1_colored),
+            'FOV={:>{}}\'x{:>{}}\'={}x'.format(fov_h1_str, fov_h_width, fov_v1_str, fov_v_width, fov_factor1_colored),
+            'eoi={}x'.format(eoi1_colored),
+            'poi={}x'.format(poi1_colored),
+            'e={}x'.format(e1_colored),
+            'pe={}x'.format(pe1_colored),
+            'ps={}x'.format(ps1_colored),
+            'os={}x'.format(os1_colored)
+        ]
+
+        line2_parts = [
+            'Telescope 2',
+            'f/{}'.format(fr2_colored),
+            'fl={:>{}.0f}mm'.format(t2_focal_length, fl_width),
+            'D={}mm'.format(d2_colored),
+            'O={}%'.format(o2_colored),
+            'res={}\"/p'.format(res2_colored),
+            'FOV={:>{}}\'x{:>{}}\'={}x'.format(fov_h2_str, fov_h_width, fov_v2_str, fov_v_width, fov_factor2_colored),
+            'eoi={}x'.format(eoi2_colored),
+            'poi={}x'.format(poi2_colored),
+            'e={}x'.format(e2_colored),
+            'pe={}x'.format(pe2_colored),
+            'ps={}x'.format(ps2_colored),
+            'os={}x'.format(os2_colored)
+        ]
+
+        print(' '.join(line1_parts))
+        print(' '.join(line2_parts))
         if args.legend:
             print(
                 '# F-number focalLength apertureDiameter Obstruction RESolution FieldOfView ExtendedObjectIrradiance PixelOI Etendue PixelEtendue PixelSignal ObjectSignal')
